@@ -1,0 +1,48 @@
+Using launch settings from D:\SmartELibrary\Properties\launchSettings.json...
+info: DatabaseStartup[0]
+      Skipping automatic migrations. Pass --migrate to apply DB updates.
+info: DatabaseStartup[0]
+      Connected database: railway
+info: DatabaseStartup[0]
+      Wipe flags: userGenerated=False, allData=False, noSeed=False
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (557ms) [Parameters=[@__phoneNumber_0='?' (Size = 15)], CommandType='Text', CommandTimeout='180']
+      SELECT `u`.`Id`, `u`.`CreatedAtUtc`, `u`.`Email`, `u`.`EnrollmentNo`, `u`.`FullName`, `u`.`IsApproved`, `u`.`IsPhoneVerified`, `u`.`PasswordHash`, `u`.`PhoneNumber`, `u`.`Role`
+      FROM `Users` AS `u`
+      WHERE `u`.`PhoneNumber` = @__phoneNumber_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (246ms) [Parameters=[@__admin_Id_0='?' (DbType = Int32)], CommandType='Text', CommandTimeout='180']
+      SELECT `a`.`Id`, `a`.`CreatedAtUtc`, `a`.`UserId`
+      FROM `Admins` AS `a`
+      WHERE `a`.`UserId` = @__admin_Id_0
+      LIMIT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (318ms) [Parameters=[], CommandType='Text', CommandTimeout='180']
+      SELECT `u`.`Id`, `u`.`Role`, `u`.`EnrollmentNo`
+      FROM `Users` AS `u`
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (306ms) [Parameters=[], CommandType='Text', CommandTimeout='180']
+      SELECT `a`.`UserId`
+      FROM `Admins` AS `a`
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (335ms) [Parameters=[], CommandType='Text', CommandTimeout='180']
+      SELECT `t`.`UserId`
+      FROM `Teachers` AS `t`
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (300ms) [Parameters=[], CommandType='Text', CommandTimeout='180']
+      SELECT `t`.`TeacherId`
+      FROM `Teachers` AS `t`
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (311ms) [Parameters=[], CommandType='Text', CommandTimeout='180']
+      SELECT `s`.`UserId`
+      FROM `Students` AS `s`
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://localhost:5099
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Development
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: D:\SmartELibrary
+^C

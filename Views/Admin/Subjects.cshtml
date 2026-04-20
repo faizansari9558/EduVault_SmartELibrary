@@ -1,0 +1,101 @@
+@model IEnumerable<SmartELibrary.Models.Subject>
+@{
+    ViewData["Title"] = "Subjects";
+    var semesters = ViewBag.Semesters as List<SmartELibrary.Models.Semester> ?? new();
+}
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card"><div class="card-body">
+            <h6>Create Subject</h6>
+            <form asp-action="CreateSubject" method="post">
+                <input name="name" class="form-control mb-2" placeholder="Subject name" required />
+                <input name="subjectCode" class="form-control mb-2" placeholder="Subject code (e.g., CS101)" required />
+                <select name="semesterId" class="form-select mb-2" required>
+                    <option value="">Select semester</option>
+                    @foreach (var semester in semesters)
+                    {
+                        <option value="@semester.Id">@semester.Name</option>
+                    }
+                </select>
+                <button class="btn btn-primary">Create</button>
+            </form>
+        </div></div>
+    </div>
+    <div class="col-md-8">
+        <div class="card"><div class="card-body table-responsive">
+            <table class="table table-sm admin-table"><thead><tr><th>Subject Code</th><th>Subject</th><th>Semester</th><th>Action</th></tr></thead><tbody>
+            @foreach (var subject in Model)
+            {
+                <tr>
+                    <td>@subject.SubjectCode</td>
+                    <td>@subject.Name</td>
+                    <td>@subject.Semester?.Name</td>
+                    <td>
+                        <form asp-action="DeleteSubject" method="post" class="delete-subject-form d-inline" data-subject-name="@subject.Name" data-subject-code="@subject.SubjectCode">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="subjectId" value="@subject.Id" />
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody></table>
+        </div></div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteSubjectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Subject Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="deleteSubjectModalBody">Are you sure?</div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteSubjectBtn">Yes, Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const forms = document.querySelectorAll(".delete-subject-form");
+        const modalElement = document.getElementById("deleteSubjectModal");
+        const modalBody = document.getElementById("deleteSubjectModalBody");
+        const confirmBtn = document.getElementById("confirmDeleteSubjectBtn");
+
+        if (!forms.length || !modalElement || !modalBody || !confirmBtn) {
+            return;
+        }
+
+        const modal = new bootstrap.Modal(modalElement);
+        let pendingForm = null;
+
+        forms.forEach(form => {
+            form.addEventListener("submit", function (event) {
+                event.preventDefault();
+                pendingForm = this;
+
+                const subjectName = this.getAttribute("data-subject-name") || "this subject";
+                const subjectCode = this.getAttribute("data-subject-code") || "";
+                modalBody.textContent = "Delete " + subjectName + (subjectCode ? " (" + subjectCode + ")" : "") + "?";
+                modal.show();
+            });
+        });
+
+        confirmBtn.addEventListener("click", function () {
+            if (!pendingForm) {
+                return;
+            }
+
+            const formToSubmit = pendingForm;
+            pendingForm = null;
+            modal.hide();
+            formToSubmit.submit();
+        });
+    });
+</script>

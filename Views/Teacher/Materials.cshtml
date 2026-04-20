@@ -1,0 +1,51 @@
+@model IEnumerable<SmartELibrary.Models.Material>
+@{
+    ViewData["Title"] = "My Materials";
+}
+
+<div class="card">
+    <div class="card-body table-responsive">
+        <table class="table table-striped">
+            <thead><tr><th>Title</th><th>Subject</th><th>Semester</th><th>Type</th><th>Public</th><th>Preview</th><th>Manage</th></tr></thead>
+            <tbody>
+            @foreach (var item in Model)
+            {
+                var hasPages = item.Pages?.Count > 0;
+                var isRichText = string.Equals(item.FilePathOrUrl, "RICH_TEXT", StringComparison.OrdinalIgnoreCase);
+                <tr>
+                    <td>@item.Title</td>
+                    <td>@item.Subject?.Name</td>
+                    <td>@item.Semester?.Name</td>
+                    <td>@item.MaterialType</td>
+                    <td>@(item.IsPublic ? "Yes" : "No")</td>
+                    <td>
+                        @if (hasPages)
+                        {
+                            <a class="btn btn-sm btn-outline-primary" asp-action="PreviewChapter" asp-route-materialId="@item.Id" asp-route-pageNumber="1">Open</a>
+                        }
+                        else
+                        {
+                            <a href="@item.FilePathOrUrl" target="_blank" class="btn btn-sm btn-outline-primary">Open</a>
+                        }
+                    </td>
+                    <td>
+                        <div class="d-flex gap-2">
+                        @if (isRichText)
+                        {
+                            <a class="btn btn-sm btn-outline-secondary" asp-action="EditMaterial" asp-route-materialId="@item.Id">Edit Pages</a>
+                        }
+                        else
+                        {
+                            <span class="text-muted d-flex align-items-center">-</span>
+                        }
+                        <form asp-action="DeleteMaterial" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Are you sure you want to delete this material? All associated quizzes and student progress will be permanently deleted.');" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+</div>

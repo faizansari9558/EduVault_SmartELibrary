@@ -1,0 +1,51 @@
+@model SmartELibrary.ViewModels.EditUserViewModel
+@{
+    ViewData["Title"] = "Edit User";
+}
+
+<div class="card">
+    <div class="card-body">
+        <form asp-action="EditUser" method="post" class="row g-3">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <input type="hidden" asp-for="Id" />
+
+            <div class="col-md-6">
+                <label asp-for="FullName" class="form-label"></label>
+                <input asp-for="FullName" class="form-control" />
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="PhoneNumber" class="form-label"></label>
+                <input asp-for="PhoneNumber" class="form-control" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="Role" class="form-label"></label>
+                <select asp-for="Role" class="form-select" asp-items="Html.GetEnumSelectList<SmartELibrary.Models.UserRole>()"></select>
+                <span asp-validation-for="Role" class="text-danger"></span>
+            </div>
+
+            <div class="col-md-6">
+                <label asp-for="EnrollmentNo" class="form-label"></label>
+                <input asp-for="EnrollmentNo" class="form-control" />
+                <span asp-validation-for="EnrollmentNo" class="text-danger"></span>
+                <div class="form-text">Used only for Students.</div>
+            </div>
+
+            <div class="col-12">
+                <div class="form-check">
+                    <input asp-for="IsApproved" class="form-check-input" />
+                    <label asp-for="IsApproved" class="form-check-label"></label>
+                </div>
+            </div>
+
+            <div class="col-12 d-flex gap-2">
+                <button class="btn btn-primary" type="submit">Save</button>
+                <a class="btn btn-outline-secondary" asp-action="Users">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,41 @@
+@model SmartELibrary.ViewModels.ReadMaterialPageViewModel
+@{
+    ViewData["Title"] = "Preview Chapter";
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+            <div>
+                <h5 class="mb-1">@Model.MaterialTitle</h5>
+                <div class="text-muted">Page @Model.PageNumber of @Model.TotalPages</div>
+            </div>
+            <div class="text-muted">@Model.PageTitle</div>
+        </div>
+
+        <hr />
+
+        <div class="read-landscape">
+            @Html.Raw(Model.HtmlContent)
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <div>
+                @if (!Model.IsFirstPage)
+                {
+                    <a class="btn btn-outline-secondary" asp-action="PreviewChapter" asp-route-materialId="@Model.MaterialId" asp-route-pageNumber="@(Model.PageNumber - 1)">Previous</a>
+                }
+            </div>
+            <div>
+                @if (!Model.IsLastPage)
+                {
+                    <a class="btn btn-primary" asp-action="PreviewChapter" asp-route-materialId="@Model.MaterialId" asp-route-pageNumber="@(Model.PageNumber + 1)">Next</a>
+                }
+                else
+                {
+                    <a class="btn btn-outline-primary" asp-action="Materials">Back</a>
+                }
+            </div>
+        </div>
+    </div>
+</div>

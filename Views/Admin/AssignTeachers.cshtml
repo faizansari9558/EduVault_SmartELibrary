@@ -1,0 +1,67 @@
+@model IEnumerable<SmartELibrary.Models.TeacherSubject>
+@{
+    ViewData["Title"] = "Assign Teachers";
+    var teachers = ViewBag.Teachers as List<SmartELibrary.Models.User> ?? new();
+    var subjects = ViewBag.Subjects as List<SmartELibrary.Models.Subject> ?? new();
+    var teacherIdsByUserId = ViewBag.TeacherIdsByUserId as Dictionary<int, string> ?? new();
+    var assignedSubjectIds = Model.Select(x => x.SubjectId).Distinct().ToHashSet();
+}
+
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card"><div class="card-body">
+            <h6>Assign Teacher to Subject</h6>
+            <form asp-action="AssignTeacher" method="post">
+                <select name="teacherId" class="form-select mb-2" required>
+                    <option value="">Teacher</option>
+                    @foreach (var t in teachers)
+                    {
+                        var teacherId = teacherIdsByUserId.TryGetValue(t.Id, out var tid) ? tid : null;
+                        <option value="@t.Id">@(string.IsNullOrWhiteSpace(teacherId) ? t.FullName : $"{teacherId} - {t.FullName}")</option>
+                    }
+                </select>
+                <select name="subjectId" class="form-select mb-2" required>
+                    <option value="">Subject</option>
+                    @foreach (var s in subjects)
+                    {
+                        <option value="@s.Id" data-is-assigned="@(assignedSubjectIds.Contains(s.Id) ? "true" : "false")">@s.SubjectCode - @s.Name (@s.Semester?.Name)</option>
+                    }
+                </select>
+                <button id="assignTeacherSubmitBtn" class="btn btn-primary">Assign</button>
+            </form>
+        </div></div>
+    </div>
+    <div class="col-md-8">
+        <div class="card"><div class="card-body table-responsive">
+            <table class="table table-striped admin-table"><thead><tr><th>Teacher ID</th><th>Teacher</th><th>Subject Code</th><th>Subject</th><th>Semester</th></tr></thead><tbody>
+            @foreach (var map in Model)
+            {
+                var teacherId = teacherIdsByUserId.TryGetValue(map.TeacherId, out var tid) ? tid : null;
+                <tr><td>@(string.IsNullOrWhiteSpace(teacherId) ? "-" : teacherId)</td><td>@map.Teacher?.FullName</td><td>@map.Subject?.SubjectCode</td><td>@map.Subject?.Name</td><td>@map.Subject?.Semester?.Name</td></tr>
+            }
+            </tbody></table>
+        </div></div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const subjectSelect = document.querySelector('select[name="subjectId"]');
+        const submitBtn = document.getElementById("assignTeacherSubmitBtn");
+
+        const syncButtonText = function () {
+            if (!subjectSelect || !submitBtn) {
+                return;
+            }
+
+            const selected = subjectSelect.options[subjectSelect.selectedIndex];
+            const isAssigned = selected && selected.getAttribute("data-is-assigned") === "true";
+            submitBtn.textContent = isAssigned ? "Update Assignment" : "Assign";
+        };
+
+        if (subjectSelect) {
+            subjectSelect.addEventListener("change", syncButtonText);
+            syncButtonText();
+        }
+    });
+</script>

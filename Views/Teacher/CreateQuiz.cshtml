@@ -1,0 +1,221 @@
+@model SmartELibrary.ViewModels.StandaloneQuizViewModel
+@{
+    ViewData["Title"] = "Create Quiz";
+    var subjects = ViewBag.Subjects as List<SmartELibrary.Models.Subject> ?? new();
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h4 class="mb-0">📝 Create Quiz</h4>
+    <a asp-action="Quizzes" class="btn btn-outline-secondary btn-sm">← Back to Quizzes</a>
+</div>
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        <ul class="mb-0">
+            @foreach (var entry in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <li>@entry.ErrorMessage</li>
+            }
+        </ul>
+    </div>
+}
+
+<form asp-action="CreateQuiz" method="post" id="quizForm">
+    @Html.AntiForgeryToken()
+
+    <div class="card mb-3">
+        <div class="card-header fw-semibold">Quiz Details</div>
+        <div class="card-body">
+            <div class="row g-3">
+                <!-- Title -->
+                <div class="col-md-6">
+                    <label asp-for="Title" class="form-label">Quiz Title <span class="text-danger">*</span></label>
+                    <input asp-for="Title" class="form-control" placeholder="e.g. Chapter 3 Quiz" />
+                    <span asp-validation-for="Title" class="text-danger small"></span>
+                </div>
+
+                <!-- Subject -->
+                <div class="col-md-6">
+                    <label asp-for="SubjectId" class="form-label">Subject <span class="text-danger">*</span></label>
+                    <select asp-for="SubjectId" class="form-select">
+                        <option value="">-- Select Subject --</option>
+                        @foreach (var s in subjects)
+                        {
+                            <option value="@s.Id">@s.Name (@s.Semester?.Name)</option>
+                        }
+                    </select>
+                    <span asp-validation-for="SubjectId" class="text-danger small"></span>
+                </div>
+
+                <!-- Time Limit -->
+                <div class="col-md-4">
+                    <label asp-for="TimeLimitMinutes" class="form-label">Time Limit (minutes)</label>
+                    <input asp-for="TimeLimitMinutes" class="form-control" type="number" min="1" max="300" placeholder="Leave blank for unlimited" />
+                    <span asp-validation-for="TimeLimitMinutes" class="text-danger small"></span>
+                </div>
+
+                <!-- Available From -->
+                <div class="col-md-4">
+                    <label asp-for="AvailableFrom" class="form-label">Available From</label>
+                    <input asp-for="AvailableFrom" class="form-control" type="datetime-local" />
+                    <div class="form-text">Students can take the quiz on or after this date.</div>
+                </div>
+
+                <!-- End Date -->
+                <div class="col-md-4">
+                    <label asp-for="AvailableTo" class="form-label">End Date (Deadline)</label>
+                    <input asp-for="AvailableTo" class="form-control" type="datetime-local" />
+                    <div class="form-text">Students must submit before this date. Leave blank for no deadline.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Questions -->
+    <div id="questionsContainer">
+        @for (var i = 0; i < Model.Questions.Count; i++)
+        {
+            <div class="card mb-3 question-card" data-index="@i">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span class="fw-semibold question-label">Question @(i + 1)</span>
+                    <button type="button" class="btn btn-outline-danger btn-sm remove-question-btn" @(i == 0 ? "style=display:none" : "")>✕ Remove</button>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">Question Text <span class="text-danger">*</span></label>
+                        <textarea name="Questions[@i].QuestionText" class="form-control" rows="2" required placeholder="Enter question">@Model.Questions[i].QuestionText</textarea>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Option A <span class="text-danger">*</span></label>
+                            <input name="Questions[@i].OptionA" class="form-control" required placeholder="Option A" value="@Model.Questions[i].OptionA" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Option B <span class="text-danger">*</span></label>
+                            <input name="Questions[@i].OptionB" class="form-control" required placeholder="Option B" value="@Model.Questions[i].OptionB" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Option C <span class="text-danger">*</span></label>
+                            <input name="Questions[@i].OptionC" class="form-control" required placeholder="Option C" value="@Model.Questions[i].OptionC" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Option D <span class="text-danger">*</span></label>
+                            <input name="Questions[@i].OptionD" class="form-control" required placeholder="Option D" value="@Model.Questions[i].OptionD" />
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Correct Answer <span class="text-danger">*</span></label>
+                        <select name="Questions[@i].CorrectOption" class="form-select" required>
+                            @foreach (var opt in new[] { "A", "B", "C", "D" })
+                            {
+                                <option value="@opt" selected="@(Model.Questions[i].CorrectOption == opt)">Option @opt</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="d-flex gap-2 mb-4">
+        <button type="button" id="addQuestionBtn" class="btn btn-outline-primary">＋ Add Question</button>
+        <button type="submit" class="btn btn-success">💾 Save Quiz</button>
+    </div>
+</form>
+
+@* Hidden template for new question card (rendered server-side, cloned by JS) *@
+<template id="questionTemplate">
+    <div class="card mb-3 question-card" data-index="__INDEX__">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span class="fw-semibold question-label">Question __NUM__</span>
+            <button type="button" class="btn btn-outline-danger btn-sm remove-question-btn">✕ Remove</button>
+        </div>
+        <div class="card-body">
+            <div class="mb-3">
+                <label class="form-label">Question Text <span class="text-danger">*</span></label>
+                <textarea name="Questions[__INDEX__].QuestionText" class="form-control" rows="2" required placeholder="Enter question"></textarea>
+            </div>
+            <div class="row g-2 mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Option A <span class="text-danger">*</span></label>
+                    <input name="Questions[__INDEX__].OptionA" class="form-control" required placeholder="Option A" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Option B <span class="text-danger">*</span></label>
+                    <input name="Questions[__INDEX__].OptionB" class="form-control" required placeholder="Option B" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Option C <span class="text-danger">*</span></label>
+                    <input name="Questions[__INDEX__].OptionC" class="form-control" required placeholder="Option C" />
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Option D <span class="text-danger">*</span></label>
+                    <input name="Questions[__INDEX__].OptionD" class="form-control" required placeholder="Option D" />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Correct Answer <span class="text-danger">*</span></label>
+                <select name="Questions[__INDEX__].CorrectOption" class="form-select" required>
+                    <option value="A">Option A</option>
+                    <option value="B">Option B</option>
+                    <option value="C">Option C</option>
+                    <option value="D">Option D</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</template>
+
+@section Scripts {
+<script>
+(function () {
+    var container = document.getElementById('questionsContainer');
+    var template  = document.getElementById('questionTemplate');
+
+    function reindex() {
+        var cards = container.querySelectorAll('.question-card');
+        cards.forEach(function (card, idx) {
+            card.dataset.index = idx;
+            card.querySelector('.question-label').textContent = 'Question ' + (idx + 1);
+
+            // rename all inputs / selects / textareas
+            card.querySelectorAll('[name]').forEach(function (el) {
+                el.name = el.name.replace(/Questions\[\d+\]/, 'Questions[' + idx + ']');
+            });
+
+            // Show/hide remove button
+            var removeBtn = card.querySelector('.remove-question-btn');
+            removeBtn.style.display = idx === 0 ? 'none' : '';
+        });
+    }
+
+    document.getElementById('addQuestionBtn').addEventListener('click', function () {
+        var cards = container.querySelectorAll('.question-card');
+        var newIdx = cards.length;
+        var html = template.innerHTML
+            .replace(/__INDEX__/g, newIdx)
+            .replace(/__NUM__/g, newIdx + 1);
+
+        var wrapper = document.createElement('div');
+        wrapper.innerHTML = html;
+        var newCard = wrapper.firstElementChild;
+        container.appendChild(newCard);
+
+        newCard.querySelector('.remove-question-btn').addEventListener('click', removeHandler);
+        reindex();
+    });
+
+    // Attach remove handlers to existing cards
+    container.querySelectorAll('.remove-question-btn').forEach(function (btn) {
+        btn.addEventListener('click', removeHandler);
+    });
+
+    function removeHandler() {
+        var card = this.closest('.question-card');
+        card.remove();
+        reindex();
+    }
+})();
+</script>
+}

@@ -1,0 +1,87 @@
+@model IEnumerable<SmartELibrary.Models.Quiz>
+@{
+    ViewData["Title"] = "My Quizzes";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h4 class="mb-0">📋 My Quizzes</h4>
+    <a asp-action="CreateQuiz" class="btn btn-primary btn-sm">＋ Create Quiz</a>
+</div>
+
+@if (TempData["Success"] is not null)
+{
+    <div class="alert alert-success alert-dismissible fade show">@TempData["Success"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+
+<div class="card">
+    <div class="card-body table-responsive p-0">
+        @if (!Model.Any())
+        {
+            <div class="text-muted text-center py-4">No quizzes created yet. <a asp-action="CreateQuiz">Create one →</a></div>
+        }
+        else
+        {
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Title</th>
+                        <th>Subject</th>
+                        <th>Questions</th>
+                        <th>Time Limit</th>
+                        <th>Available From</th>
+                        <th>End Date</th>
+                        <th>Attempts</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="text-muted small">@item.Id</td>
+                            <td class="fw-semibold">@item.Title</td>
+                            <td>@item.Subject?.Name <span class="text-muted small">(@item.Subject?.Semester?.Name)</span></td>
+                            <td><span class="badge bg-secondary">@item.QuizQuestions.Count</span></td>
+                            <td>
+                                @if (item.TimeLimitMinutes.HasValue)
+                                {
+                                    <span class="badge bg-warning text-dark">⏱ @item.TimeLimitMinutes min</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">Unlimited</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.AvailableFromUtc.HasValue)
+                                {
+                                    <span class="small">@item.AvailableFromUtc.Value.ToLocalTime().ToString("dd MMM yyyy, hh:mm tt")</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">Immediately</span>
+                                }
+                            </td>
+                            <td>
+                                @if (item.AvailableToUtc.HasValue)
+                                {
+                                    <span class="small text-danger fw-semibold">@item.AvailableToUtc.Value.ToLocalTime().ToString("dd MMM yyyy, hh:mm tt")</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted small">No deadline</span>
+                                }
+                            </td>
+                            <td><span class="badge bg-info text-dark">@item.QuizResults.Count</span></td>
+                            <td>
+                                <a asp-action="QuizResults" asp-route-quizId="@item.Id"
+                                   class="btn btn-outline-primary btn-sm">📊 Results</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>

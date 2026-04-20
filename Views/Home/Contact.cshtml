@@ -1,0 +1,104 @@
+@{
+    ViewData["Title"] = "Contact EduVault";
+}
+
+<style>
+    .info-page-section { padding: 40px 20px 60px; max-width: 900px; margin: 0 auto; min-height: calc(100vh - 200px); }
+    .info-card { background: var(--glass-bg, rgba(20, 20, 25, 0.7)); border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1)); border-radius: 20px; padding: 40px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(138, 43, 226, 0.1); position: relative; overflow: hidden; }
+    .info-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, #4F9CF9, transparent); opacity: 0.8; }
+    .info-title { font-size: 2.5rem; font-weight: 800; margin-bottom: 30px; text-align: center; letter-spacing: -0.5px; background: linear-gradient(90deg, #fff, #93c5fd); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .info-content p { color: rgba(226, 232, 240, 0.9); line-height: 1.8; font-size: 1.05rem; margin-bottom: 20px; text-align: center; }
+    
+    .contact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin: 40px 0; }
+    .contact-item { background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 25px; display: flex; align-items: flex-start; gap: 15px; transition: transform 0.2s ease, background 0.2s ease; }
+    .contact-item:hover { transform: translateY(-3px); background: rgba(255,255,255,0.03); border-color: rgba(138, 43, 226, 0.3); }
+    .contact-icon { font-size: 1.8rem; background: rgba(138, 43, 226, 0.15); width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; border-radius: 12px; color: #c084fc; flex-shrink: 0; }
+    .contact-details h3 { font-size: 1.1rem; color: #a1a1aa; margin-bottom: 5px; font-weight: 500; }
+    .contact-details p { color: #fff; font-size: 1.1rem; font-weight: 600; margin: 0; text-align: left; overflow-wrap: anywhere; }
+    .contact-details a { color: #4F9CF9; text-decoration: none; transition: color 0.2s ease; }
+    .contact-details a:hover { color: #93c5fd; text-decoration: underline; }
+    .contact-item-full { grid-column: 1 / -1; max-width: 400px; justify-self: center; }
+
+    .support-info { background: linear-gradient(180deg, rgba(30, 41, 59, 0.6), rgba(15, 23, 42, 0.8)); padding: 30px; border-radius: 16px; border: 1px solid rgba(79, 156, 249, 0.2); margin-top: 20px; text-align: center; }
+    .support-info h3 { color: #fff; font-size: 1.3rem; margin-bottom: 15px; }
+    
+    @@media (max-width: 768px) {
+        .info-page-section { padding: 24px 12px 40px; }
+        .info-card { padding: 25px 20px; }
+        .info-title { font-size: 2rem; }
+        .contact-grid { grid-template-columns: 1fr; gap: 16px; margin: 28px 0; }
+        .contact-item { padding: 18px; }
+        .contact-item-full { max-width: 100%; }
+        .support-info { padding: 22px 16px; }
+    }
+
+    @@media (max-width: 480px) {
+        .info-card { padding: 20px 14px; border-radius: 16px; }
+        .info-title { font-size: 1.9rem; margin-bottom: 22px; }
+        .info-content p { font-size: 1rem; }
+        .contact-item { gap: 12px; }
+        .contact-icon { width: 44px; height: 44px; font-size: 1.4rem; border-radius: 10px; }
+        .contact-details h3 { font-size: 1rem; }
+        .contact-details p { font-size: 1rem; }
+    }
+</style>
+
+<div class="info-page-section">
+    <div class="info-card">
+        <h1 class="info-title">Contact EduVault</h1>
+        
+        <div class="info-content">
+            <p>If you have questions, suggestions, or technical issues related to EduVault, feel free to contact us.</p>
+            
+            <div class="contact-grid">
+                <div class="contact-item">
+                    <div class="contact-icon">👨‍💻</div>
+                    <div class="contact-details">
+                        <h3>Developer</h3>
+                        <p>Ansari Faiz Alam Mahmood</p>
+                    </div>
+                </div>
+                
+                <div class="contact-item">
+                    <div class="contact-icon">📍</div>
+                    <div class="contact-details">
+                        <h3>Location</h3>
+                        <p>Vyara, Gujarat, India</p>
+                    </div>
+                </div>
+                
+                <div class="contact-item">
+                    <div class="contact-icon">📧</div>
+                    <div class="contact-details">
+                        <h3>Email</h3>
+                        <p><a href="mailto:faizansari9558@gmail.com">faizansari9558@gmail.com</a></p>
+                    </div>
+                </div>
+
+                <div class="contact-item">
+                    <div class="contact-icon">🐙</div>
+                    <div class="contact-details">
+                        <h3>GitHub</h3>
+                        <p><a href="https://github.com/faizansari9558" target="_blank">faizansari9558</a></p>
+                    </div>
+                </div>
+
+                <div class="contact-item contact-item-full">
+                    <div class="contact-icon">💼</div>
+                    <div class="contact-details">
+                        <h3>LinkedIn</h3>
+                        <p><a href="https://www.linkedin.com/in/faiz-alam-ansari-817775214/" target="_blank">Faiz Alam Ansari</a></p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="support-info">
+                <h3>Support Information</h3>
+                <p style="text-align: center; margin-bottom: 15px;">For issues related to login, account access, materials, quizzes, or technical errors, please contact via email.</p>
+                <div style="display: inline-block; background: rgba(255,255,255,0.05); padding: 10px 20px; border-radius: 50px; font-size: 0.95rem; color: #a1a1aa;">
+                    ⏱️ Typical response time: <strong style="color: #fff;">24–48 hours</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

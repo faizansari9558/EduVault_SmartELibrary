@@ -1,0 +1,67 @@
+@{
+    ViewData["Title"] = "EduVault - Smart E-Library";
+}
+
+<style>
+    /* Hero Section */
+    .hero-section { padding: 40px 20px 20px; text-align: center; max-width: 900px; margin: 0 auto; position: relative; }
+    .tagline { display: inline-block; padding: 6px 16px; background: rgba(138, 43, 226, 0.15); border: 1px solid rgba(138, 43, 226, 0.3); border-radius: 50px; color: var(--text-gradient-start); font-weight: 600; font-size: 0.9rem; margin-bottom: 16px; letter-spacing: 1px; }
+    .hero-title { font-size: 4rem; font-weight: 800; line-height: 1.1; margin-bottom: 16px; letter-spacing: -1px; }
+    .hero-subtitle { font-size: 1.1rem; color: var(--text-muted); max-width: 700px; margin: 0 auto; line-height: 1.6; }
+    .hero-actions { display: flex; gap: 20px; justify-content: center; align-items: center; flex-wrap: wrap; }
+    @@media (max-width: 768px) { .hero-title { font-size: 3rem; } }
+
+    /* Features Section */
+    .features-section { padding: 30px 20px 50px; max-width: 1200px; margin: 0 auto; }
+    .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+    .feature-card { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 20px; padding: 25px 20px; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); transition: transform 0.3s ease, box-shadow 0.3s ease; position: relative; overflow: hidden; }
+    .feature-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--glow-purple), transparent); opacity: 0; transition: opacity 0.3s ease; }
+    .feature-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px rgba(0,0,0,0.3), 0 0 15px rgba(138, 43, 226, 0.1); }
+    .feature-card:hover::before { opacity: 1; }
+    .feature-icon { font-size: 2rem; margin-bottom: 15px; display: inline-block; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; }
+    .feature-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; }
+    .feature-desc { color: var(--text-muted); line-height: 1.5; font-size: 0.95rem; }
+
+    /* CTA Section */
+    .cta-section { text-align: center; padding: 20px 20px 40px; position: relative; }
+    .cta-container { max-width: 800px; margin: 0 auto; background: linear-gradient(180deg, rgba(26, 11, 46, 0.8) 0%, rgba(10, 10, 10, 0) 100%); border: 1px solid var(--glass-border); border-bottom: none; border-radius: 24px 24px 0 0; padding: 40px 30px; }
+    .cta-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 20px; }
+</style>
+
+<!-- HERO SECTION -->
+<div class="hero-section">
+    <div class="tagline">Learn. Store. Succeed.</div>
+    <h1 class="hero-title">Smarter Learning<br>Starts with <span class="text-gradient">EduVault</span></h1>
+    <p class="hero-subtitle">
+        EduVault is a smart digital learning platform where students can read structured study materials, attempt quizzes, and track their academic progress in one place.
+    </p>
+</div>
+
+<!-- FEATURES SECTION -->
+<div class="features-section">
+    <div class="feature-grid">
+        <div class="feature-card">
+            <div class="feature-icon">📚</div>
+            <h3 class="feature-title">Digital Library</h3>
+            <p class="feature-desc">Students can read structured chapters and learning materials curated specifically for their academic syllabus.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">🧠</div>
+            <h3 class="feature-title">Smart Progress Tracking</h3>
+            <p class="feature-desc">Automatically calculate learning progress and engagement to help visualize your academic success effectively.</p>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">📝</div>
+            <h3 class="feature-title">Quiz Based Learning</h3>
+            <p class="feature-desc">Teachers can create comprehensive quizzes and effortlessly track student performance and understanding.</p>
+        </div>
+    </div>
+</div>
+
+<!-- CTA SECTION -->
+<div class="cta-section">
+    <div class="cta-container">
+        <h2 class="cta-title">Start Your Learning Journey Today</h2>
+        <a href="/Account/Register?role=Student" class="btn btn-primary btn-lg mt-3" style="padding: 15px 40px; font-size: 1.1rem;">Create Account</a>
+    </div>
+</div>

@@ -1,0 +1,20 @@
+# .NET build outputs
+bin/
+obj/
+
+# Secrets and environment variables — NEVER commit these
+.env
+*.env
+appsettings.Development.json
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+
+# Rider
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

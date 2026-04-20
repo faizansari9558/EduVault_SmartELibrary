@@ -1,0 +1,91 @@
+@model SmartELibrary.ViewModels.ProgressAnalyticsDashboardViewModel
+@{
+    ViewData["Title"] = "System Reports";
+}
+
+<div class="row g-3">
+    <div class="col-12">
+        @if (Model.Rows.Count == 0)
+        {
+            <div class="card">
+                <div class="card-body text-center text-muted py-4">No progress records found.</div>
+            </div>
+        }
+        else
+        {
+            var groupedRows = Model.Rows.GroupBy(x => x.Semester).OrderBy(x => x.Key).ToList();
+            foreach (var group in groupedRows)
+            {
+                <div class="card mb-4">
+                    <div class="card-body table-responsive">
+                        <h6 class="mb-3">Semester: @group.Key</h6>
+                        <table class="table table-hover align-middle analytics-table admin-table">
+                            <thead class="table-light">
+                            <tr>
+                                <th class="text-nowrap">Enrollment No</th>
+                                <th class="text-nowrap">Student Name</th>
+                                <th class="text-nowrap">Semester</th>
+                                <th class="text-end text-nowrap">Screen Time</th>
+                                <th class="text-end text-nowrap">Quiz Score (%)</th>
+                                <th class="text-end text-nowrap">Quiz Marks</th>
+                                <th class="text-center text-nowrap">Quiz Violations</th>
+                                <th class="text-end text-nowrap">Completion (%)</th>
+                                <th class="text-nowrap" style="min-width: 150px;">Final Progress (%)</th>
+                                <th class="text-nowrap">Status</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var row in group.OrderBy(x => x.EnrollmentNo))
+                            {
+                                <tr>
+                                    <td class="text-nowrap">@(string.IsNullOrWhiteSpace(row.EnrollmentNo) ? "-" : row.EnrollmentNo)</td>
+                                    <td class="text-nowrap">@row.StudentName</td>
+                                    <td class="text-nowrap">@row.Semester</td>
+                                    <td class="text-end text-nowrap">@row.ScreenTimeHms</td>
+                                    <td class="text-end text-nowrap">@row.QuizScorePercent</td>
+                                    <td class="text-end text-nowrap">@row.QuizMarks</td>
+                                    <td class="text-center text-nowrap">
+                                        @if (row.QuizViolationCount > 0)
+                                        {
+                                            <span class="badge bg-danger">@row.QuizViolationCount</span>
+                                            @if (!string.IsNullOrWhiteSpace(row.LatestQuizViolationReason))
+                                            {
+                                                <div class="small text-muted mt-1">@row.LatestQuizViolationReason</div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success">0</span>
+                                        }
+                                    </td>
+                                    <td class="text-end text-nowrap">@row.CompletionPercent</td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="progress flex-grow-1" style="height: 10px;">
+                                                <div class="progress-bar @row.ProgressBarClass" role="progressbar" style="width: @row.FinalProgressPercent%" aria-valuenow="@row.FinalProgressPercent" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                            <div class="text-nowrap">@row.FinalProgressPercent%</div>
+                                        </div>
+                                    </td>
+                                    <td class="text-nowrap"><span class="badge bg-secondary">@row.Status</span></td>
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+        }
+    </div>
+</div>
+
+<style>
+    .analytics-table {
+        font-size: 0.86rem;
+    }
+
+    .analytics-table th,
+    .analytics-table td {
+        padding: 0.45rem 0.5rem;
+    }
+</style>

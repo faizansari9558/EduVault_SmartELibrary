@@ -1,0 +1,82 @@
+@{
+    ViewData["Title"] = "Privacy Policy";
+}
+
+<style>
+    .info-page-section { padding: 40px 20px 60px; max-width: 900px; margin: 0 auto; min-height: calc(100vh - 200px); }
+    .info-card { background: var(--glass-bg, rgba(20, 20, 25, 0.7)); border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1)); border-radius: 20px; padding: 40px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(138, 43, 226, 0.1); position: relative; overflow: hidden; }
+    .info-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, #10b981, transparent); opacity: 0.8; }
+    .info-title { font-size: 2.5rem; font-weight: 800; margin-bottom: 20px; text-align: center; letter-spacing: -0.5px; background: linear-gradient(90deg, #fff, #6ee7b7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .info-subtitle { text-align: center; color: rgba(226, 232, 240, 0.8); font-size: 1.1rem; margin-bottom: 40px; }
+    
+    .privacy-section { margin-bottom: 35px; }
+    .privacy-section h3 { font-size: 1.4rem; color: #fff; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+    .privacy-section h3::before { content: ''; display: inline-block; width: 8px; height: 24px; background: linear-gradient(180deg, #34d399, #059669); border-radius: 4px; }
+    .privacy-section p { color: rgba(226, 232, 240, 0.9); line-height: 1.7; font-size: 1.05rem; margin-bottom: 15px; }
+    
+    .data-list { list-style: none; padding: 0; margin-bottom: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
+    .data-list li { background: rgba(0,0,0,0.2); padding: 12px 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); color: #e5eefb; display: flex; align-items: center; gap: 10px; }
+    .data-list li::before { content: '🛡️'; font-size: 1.1rem; }
+    
+    .highlight-box { background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(4, 120, 87, 0.15)); padding: 25px; border-radius: 16px; border: 1px solid rgba(16, 185, 129, 0.3); margin-top: 30px; text-align: center; }
+    .highlight-box p { color: #d1fae5; margin: 0; font-size: 1.1rem; font-weight: 500; }
+
+    @@media (max-width: 768px) {
+        .info-card { padding: 25px 20px; }
+        .info-title { font-size: 2rem; }
+        .data-list { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="info-page-section">
+    <div class="info-card">
+        <h1 class="info-title">Privacy Policy</h1>
+        <p class="info-subtitle">EduVault respects and protects the privacy of its users.</p>
+        
+        <div class="info-content">
+            
+            <div class="privacy-section">
+                <h3>Information We Collect</h3>
+                <ul class="data-list">
+                    <li>Name</li>
+                    <li>Email address</li>
+                    <li>Enrollment number (for students)</li>
+                    <li>Academic progress data</li>
+                    <li>Quiz results and performance data</li>
+                </ul>
+            </div>
+
+            <div class="privacy-section">
+                <h3>Purpose of Data Collection</h3>
+                <div style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                    <ul style="color: rgba(226, 232, 240, 0.9); line-height: 1.8; margin: 0; padding-left: 20px;">
+                        <li>Provide access to learning materials</li>
+                        <li>Track student learning progress</li>
+                        <li>Improve platform performance and learning experience</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="privacy-section">
+                <h3>Data Protection</h3>
+                <p>User information is stored securely in the system database and is not shared with third parties.</p>
+                <p>EduVault only uses collected data for educational and system functionality purposes.</p>
+            </div>
+
+            <div class="privacy-section">
+                <h3>User Responsibility</h3>
+                <p>Users should keep their login credentials secure and avoid sharing accounts with others.</p>
+            </div>
+
+            <div class="privacy-section">
+                <h3>Policy Updates</h3>
+                <p>This privacy policy may be updated in the future to improve transparency and security.</p>
+            </div>
+
+            <div class="highlight-box">
+                <p>🔒 Your academic data is safe with EduVault.</p>
+            </div>
+
+        </div>
+    </div>
+</div>

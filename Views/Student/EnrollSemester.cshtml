@@ -1,0 +1,23 @@
+@model SmartELibrary.ViewModels.SemesterEnrollViewModel
+@{
+    ViewData["Title"] = "Enroll Semester";
+    var semesters = ViewBag.Semesters as List<SmartELibrary.Models.Semester> ?? new();
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card"><div class="card-body">
+            <form asp-action="EnrollSemester" method="post">
+                <label asp-for="SemesterId" class="form-label"></label>
+                <select asp-for="SemesterId" class="form-select mb-3" required>
+                    <option value="">Select semester</option>
+                    @foreach (var semester in semesters)
+                    {
+                        <option value="@semester.Id">@semester.Name</option>
+                    }
+                </select>
+                <button class="btn btn-primary w-100">Enroll</button>
+            </form>
+        </div></div>
+    </div>
+</div>

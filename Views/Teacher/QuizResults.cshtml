@@ -1,0 +1,164 @@
+@model SmartELibrary.ViewModels.QuizResultsPageViewModel
+@{
+    ViewData["Title"] = "Quiz Results";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h4 class="mb-0">📊 Quiz Results</h4>
+    <a asp-action="Quizzes" class="btn btn-outline-secondary btn-sm">← Back to Quizzes</a>
+</div>
+
+<!-- Quiz Info Card -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <div class="text-muted small mb-1">Quiz Title</div>
+                <div class="fw-semibold">@Model.QuizTitle</div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted small mb-1">Subject</div>
+                <div>@Model.SubjectName</div>
+            </div>
+            <div class="col-md-2">
+                <div class="text-muted small mb-1">Total Questions</div>
+                <div><span class="badge bg-secondary">@Model.TotalQuestions</span></div>
+            </div>
+            <div class="col-md-2">
+                <div class="text-muted small mb-1">Time Limit</div>
+                @if (Model.TimeLimitMinutes.HasValue)
+                {
+                    <span class="badge bg-warning text-dark">⏱ @Model.TimeLimitMinutes min</span>
+                }
+                else
+                {
+                    <span class="text-muted small">Unlimited</span>
+                }
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted small mb-1">Available From</div>
+                @if (Model.AvailableFromUtc.HasValue)
+                {
+                    <div class="small">@Model.AvailableFromUtc.Value.ToLocalTime().ToString("dd MMM yyyy, hh:mm tt")</div>
+                }
+                else
+                {
+                    <span class="text-muted small">Immediately</span>
+                }
+            </div>
+            <div class="col-md-3">
+                <div class="text-muted small mb-1">End Date (Deadline)</div>
+                @if (Model.AvailableToUtc.HasValue)
+                {
+                    <div class="small text-danger fw-semibold">@Model.AvailableToUtc.Value.ToLocalTime().ToString("dd MMM yyyy, hh:mm tt")</div>
+                }
+                else
+                {
+                    <span class="text-muted small">No deadline</span>
+                }
+            </div>
+            <div class="col-md-2">
+                <div class="text-muted small mb-1">Total Attempts</div>
+                <div><span class="badge bg-info text-dark">@Model.Results.Count students</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Results Table -->
+<div class="card">
+    <div class="card-header fw-semibold">Student-wise Marks</div>
+    <div class="card-body p-0 table-responsive">
+        @if (!Model.Results.Any())
+        {
+            <div class="text-muted text-center py-4">No students have attempted this quiz yet.</div>
+        }
+        else
+        {
+            var rank = 0;
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Rank</th>
+                        <th>Student Name</th>
+                        <th>Enrollment No.</th>
+                        <th>Marks</th>
+                        <th>Score %</th>
+                        <th>Pass / Fail</th>
+                        <th>Status</th>
+                        <th>Submission</th>
+                        <th>Submitted At</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model.Results)
+                    {
+                        rank++;
+                        var percent = (double)r.ScorePercent;
+                        string badgeClass;
+                        string statusText;
+                        if (percent >= 80) { badgeClass = "bg-success"; statusText = "Excellent"; }
+                        else if (percent >= 60) { badgeClass = "bg-primary"; statusText = "Good"; }
+                        else if (percent >= 40) { badgeClass = "bg-warning text-dark"; statusText = "Average"; }
+                        else { badgeClass = "bg-danger"; statusText = "Needs Improvement"; }
+
+                        <tr>
+                            <td>
+                                @if (rank == 1) { <span class="fw-bold text-warning">🥇 1</span> }
+                                else if (rank == 2) { <span class="fw-bold">🥈 2</span> }
+                                else if (rank == 3) { <span class="fw-bold">🥉 3</span> }
+                                else { <span class="text-muted">@rank</span> }
+                            </td>
+                            <td class="fw-semibold">@r.StudentName</td>
+                            <td class="text-muted small">@r.EnrollmentNo</td>
+                            <td>
+                                <span class="fw-bold">@r.CorrectAnswers</span>
+                                <span class="text-muted">/ @r.TotalQuestions</span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="progress flex-grow-1" style="height:8px;min-width:60px;">
+                                        <div class="progress-bar @badgeClass" style="width:@r.ScorePercent%"></div>
+                                    </div>
+                                    <span class="small">@Math.Round((double)r.ScorePercent, 2)%</span>
+                                </div>
+                            </td>
+                            <td>
+                                @if (percent >= 40)
+                                {
+                                    <span class="badge bg-success">✔ Pass</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">✘ Fail</span>
+                                }
+                            </td>
+                            <td><span class="badge @badgeClass">@statusText</span></td>
+                            <td>
+                                @if (r.IsAutoSubmitted)
+                                {
+                                    var reason = (r.AntiCheatReason ?? string.Empty).Trim().ToLowerInvariant();
+                                    var reasonLabel = reason switch
+                                    {
+                                        "window_blur" => "window/tab switch",
+                                        "visibility_hidden" => "window/tab switch",
+                                        _ => string.IsNullOrWhiteSpace(r.AntiCheatReason) ? "window/tab switch" : r.AntiCheatReason
+                                    };
+
+                                    <span class="badge bg-danger">Auto-submitted</span>
+                                    <div class="small text-muted mt-1">@reasonLabel</div>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-success">Normal</span>
+                                }
+                            </td>
+                            <td class="text-muted small">@r.SubmittedAtUtc.ToLocalTime().ToString("dd MMM yyyy, hh:mm tt")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        }
+    </div>
+</div>

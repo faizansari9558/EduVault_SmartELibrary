@@ -1,0 +1,99 @@
+@model SmartELibrary.ViewModels.StudentSemesterResultViewModel
+@{
+    ViewData["Title"] = $"{Model.StudentName} — {Model.SemesterName} Result";
+}
+
+<div class="mb-3">
+    <a asp-action="SemesterResultDetail" asp-route-semesterId="@Model.SemesterId"
+       class="btn btn-outline-secondary btn-sm">← Back to Semester Results</a>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header"><strong>Student Result — @Model.SemesterName</strong></div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <p class="mb-1"><span class="text-muted">Student:</span> <strong>@Model.StudentName</strong></p>
+                <p class="mb-1"><span class="text-muted">Enrollment No.:</span> <strong>@Model.EnrollmentNumber</strong></p>
+                <p class="mb-0"><span class="text-muted">Semester:</span> <strong>@Model.SemesterName</strong></p>
+            </div>
+            <div class="col-md-4 text-center">
+                <div class="fs-1 fw-bold @Model.StatusClass">@Model.FinalResult%</div>
+                <div class="@Model.StatusClass fw-semibold">@Model.Status</div>
+                <div class="progress mt-2" style="height:12px;">
+                    <div class="progress-bar @SmartELibrary.ViewModels.SemesterResultHelper.GetProgressBarClass(Model.FinalResult)"
+                         style="width:@Model.FinalResult%"></div>
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
+                <p class="text-muted small mb-1">
+                    Published:
+                    @if (Model.IsPublished)
+                    {
+                        <span class="badge bg-success">Yes</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary">Not yet</span>
+                    }
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (!Model.Subjects.Any())
+{
+    <div class="alert alert-info">No subjects with chapters found for this semester.</div>
+}
+else
+{
+    foreach (var subject in Model.Subjects)
+    {
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>@subject.SubjectName</strong>
+                <span class="text-muted">Subject Average: <strong class="@SmartELibrary.ViewModels.SemesterResultHelper.GetStatus(subject.SubjectAverage).StatusClass">@subject.SubjectAverage%</strong></span>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm align-middle mb-0 admin-table">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Chapter</th>
+                            <th class="text-center">Completion %</th>
+                            <th class="text-center">Quiz Score %</th>
+                            <th class="text-center">Chapter Result %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var m in subject.Materials)
+                        {
+                            <tr>
+                                <td>@m.Title</td>
+                                <td class="text-center">@m.CompletionPercent%</td>
+                                <td class="text-center">@m.QuizScorePercent%</td>
+                                <td class="text-center">
+                                    <div class="d-flex align-items-center gap-1 justify-content-center">
+                                        <div class="progress" style="width:60px;height:8px;">
+                                            <div class="progress-bar @SmartELibrary.ViewModels.SemesterResultHelper.GetProgressBarClass(m.FinalProgress)"
+                                                 style="width:@m.FinalProgress%"></div>
+                                        </div>
+                                        <span>@m.FinalProgress%</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <td colspan="3" class="text-end fw-semibold">Subject Average:</td>
+                            <td class="text-center fw-bold @SmartELibrary.ViewModels.SemesterResultHelper.GetStatus(subject.SubjectAverage).StatusClass">
+                                @subject.SubjectAverage%
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    }
+}

@@ -1,0 +1,53 @@
+@model IEnumerable<SmartELibrary.ViewModels.SemesterStudentsGroupViewModel>
+@{
+    ViewData["Title"] = "Semester Students";
+}
+
+@if (TempData["Error"] is not null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+@if (TempData["Success"] is not null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@foreach (var group in Model)
+{
+    <div class="card mb-3">
+        <div class="card-body table-responsive">
+            <h6 class="mb-3">@group.SemesterName</h6>
+            <table class="table table-striped align-middle admin-table">
+                <thead>
+                <tr>
+                    <th>Enrollment Number</th>
+                    <th>Student Name</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Enrolled</th>
+                    <th>Decision</th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var row in group.Students)
+                {
+                    var statusClass = row.Status switch
+                    {
+                        "Approved" => "bg-success",
+                        "Rejected" => "bg-danger",
+                        _ => "bg-warning"
+                    };
+                    <tr>
+                        <td>@(string.IsNullOrWhiteSpace(row.EnrollmentNumber) ? "-" : row.EnrollmentNumber)</td>
+                        <td>@row.StudentName</td>
+                        <td>@(string.IsNullOrWhiteSpace(row.PhoneNumber) ? "-" : row.PhoneNumber)</td>
+                        <td><span class="badge @statusClass">@row.Status</span></td>
+                        <td>@(row.EnrolledAtUtc.HasValue ? row.EnrolledAtUtc.Value.ToString("dd/MM/yyyy") : "-")</td>
+                        <td>@(row.ApprovedAtUtc.HasValue ? row.ApprovedAtUtc.Value.ToString("dd/MM/yyyy") : "-")</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

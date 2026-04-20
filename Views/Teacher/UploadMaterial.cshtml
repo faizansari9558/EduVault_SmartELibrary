@@ -1,0 +1,489 @@
+@model SmartELibrary.ViewModels.ChapterUploadViewModel
+@{
+    var isEdit = ViewBag.IsEdit as bool? ?? false;
+    var materialId = ViewBag.MaterialId as int?;
+    var maxContentLength = ViewBag.MaxPageContentLength as int? ?? 4000;
+    ViewData["Title"] = isEdit ? "Edit Chapter" : "Upload Chapter";
+    var subjects = ViewBag.Subjects as List<SmartELibrary.Models.Subject> ?? new();
+}
+
+<div class="card">
+    <div class="card-body">
+        <form asp-action="@(isEdit ? "EditMaterial" : "UploadMaterial")" method="post" enctype="multipart/form-data" id="chapterForm">
+            @if (isEdit && materialId.HasValue)
+            {
+                <input type="hidden" name="materialId" value="@materialId.Value" />
+            }
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="Title" class="form-label"></label>
+                    <input asp-for="Title" class="form-control" />
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="SubjectId" class="form-label">Subject</label>
+                    <select asp-for="SubjectId" class="form-select" required>
+                        <option value="">Select subject</option>
+                        @foreach (var subject in subjects)
+                        {
+                            <option value="@subject.Id" data-semester="@subject.SemesterId">@subject.Name (@subject.Semester?.Name)</option>
+                        }
+                    </select>
+                    <span asp-validation-for="SubjectId" class="text-danger"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="SemesterId" class="form-label"></label>
+                    <input asp-for="SemesterId" class="form-control" readonly />
+                    <span asp-validation-for="SemesterId" class="text-danger"></span>
+                </div>
+                <div class="col-md-12">
+                    <label asp-for="Description" class="form-label"></label>
+                    <textarea asp-for="Description" class="form-control"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+            </div>
+
+            <hr class="my-4" />
+
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <div>
+                    <h6 class="mb-0">Chapter Pages</h6>
+                    <div class="text-muted small">Keep pages short. If content is long, create a new page. Add a quiz only on the pages you want.</div>
+                </div>
+                <button type="button" class="btn btn-outline-primary btn-sm" id="addPageBtn">Add Page</button>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <div class="list-group" id="pageList"></div>
+                </div>
+                <div class="col-md-9">
+                    <div id="pagesContainer" data-max-length="@maxContentLength">
+                        @for (var i = 0; i < Model.Pages.Count; i++)
+                        {
+                            <div class="card mb-3 page-block" data-index="@i">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center justify-content-between mb-2">
+                                        <span class="badge bg-secondary page-number">Page @(i + 1)</span>
+                                        <div class="d-flex gap-2">
+                                            <button type="button" class="btn btn-sm btn-outline-secondary insert-page">Insert Page Below</button>
+                                            <button type="button" class="btn btn-sm btn-outline-danger delete-page">Delete Page</button>
+                                        </div>
+                                    </div>
+                                    <div class="row g-3">
+                                        <input type="hidden" data-field="PageId" name="Pages[@i].PageId" value="@(Model.Pages[i].PageId?.ToString() ?? string.Empty)" />
+                                        <input type="hidden" data-field="QuizId" name="Pages[@i].QuizId" value="@(Model.Pages[i].QuizId?.ToString() ?? string.Empty)" />
+                                        <div class="col-md-6">
+                                            <label class="form-label">Page Title</label>
+                                            <input class="form-control" data-field="PageTitle" name="Pages[@i].PageTitle" value="@Model.Pages[i].PageTitle" />
+                                            <span asp-validation-for="Pages[@i].PageTitle" class="text-danger"></span>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <label class="form-label">Content</label>
+                                            <textarea class="form-control rich-editor" id="pageContent_@i" data-field="HtmlContent" name="Pages[@i].HtmlContent">@Model.Pages[i].HtmlContent</textarea>
+                                            <div class="text-danger small d-none length-warning">Content is too long. Please create a new page.</div>
+                                            <span asp-validation-for="Pages[@i].HtmlContent" class="text-danger"></span>
+                                        </div>
+
+                                        <div class="col-12">
+                                            <button type="button" class="btn btn-sm btn-outline-primary add-quiz">Add Quiz</button>
+                                        </div>
+
+                                        <div class="col-12 quiz-fields" style="display:@(Model.Pages[i].Questions.Count > 0 ? "block" : "none")">
+                                            <div class="row g-3">
+                                                <div class="col-12">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <label class="form-label mb-0">Questions</label>
+                                                        <button type="button" class="btn btn-sm btn-outline-secondary add-question">Add Question</button>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12 questions-container">
+                                                    @if (Model.Pages[i].Questions.Count == 0)
+                                                    {
+                                                        <div class="text-muted small">No questions added yet.</div>
+                                                    }
+                                                    else
+                                                    {
+                                                        for (var q = 0; q < Model.Pages[i].Questions.Count; q++)
+                                                        {
+                                                            <div class="border rounded p-3 mb-3 question-block" data-question-index="@q">
+                                                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                                                    <strong>Question @(q + 1)</strong>
+                                                                    <button type="button" class="btn btn-sm btn-outline-danger delete-question">Delete</button>
+                                                                </div>
+                                                                <div class="row g-2">
+                                                                    <div class="col-md-12">
+                                                                        <label class="form-label">Question</label>
+                                                                        <input class="form-control" data-field="QuestionText" name="Pages[@i].Questions[@q].QuestionText" value="@Model.Pages[i].Questions[q].QuestionText" />
+                                                                    </div>
+                                                                    <div class="col-md-6">
+                                                                        <label class="form-label">Option A</label>
+                                                                        <input class="form-control" data-field="OptionA" name="Pages[@i].Questions[@q].OptionA" value="@Model.Pages[i].Questions[q].OptionA" />
+                                                                    </div>
+                                                                    <div class="col-md-6">
+                                                                        <label class="form-label">Option B</label>
+                                                                        <input class="form-control" data-field="OptionB" name="Pages[@i].Questions[@q].OptionB" value="@Model.Pages[i].Questions[q].OptionB" />
+                                                                    </div>
+                                                                    <div class="col-md-6">
+                                                                        <label class="form-label">Option C</label>
+                                                                        <input class="form-control" data-field="OptionC" name="Pages[@i].Questions[@q].OptionC" value="@Model.Pages[i].Questions[q].OptionC" />
+                                                                    </div>
+                                                                    <div class="col-md-6">
+                                                                        <label class="form-label">Option D</label>
+                                                                        <input class="form-control" data-field="OptionD" name="Pages[@i].Questions[@q].OptionD" value="@Model.Pages[i].Questions[q].OptionD" />
+                                                                    </div>
+                                                                    <div class="col-md-4">
+                                                                        <label class="form-label">Correct Option</label>
+                                                                        <select class="form-select" data-field="CorrectOption" name="Pages[@i].Questions[@q].CorrectOption">
+                                                                            <option value="A" selected="@(Model.Pages[i].Questions[q].CorrectOption == "A")">A</option>
+                                                                            <option value="B" selected="@(Model.Pages[i].Questions[q].CorrectOption == "B")">B</option>
+                                                                            <option value="C" selected="@(Model.Pages[i].Questions[q].CorrectOption == "C")">C</option>
+                                                                            <option value="D" selected="@(Model.Pages[i].Questions[q].CorrectOption == "D")">D</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        }
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary mt-3">Upload</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<partial name="_ValidationScriptsPartial" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js" referrerpolicy="no-referrer"></script>
+<script>
+    document.querySelector('[name="SubjectId"]').addEventListener('change', function() {
+        const selected = this.options[this.selectedIndex];
+        document.querySelector('[name="SemesterId"]').value = selected.getAttribute('data-semester') || '';
+    });
+
+    function getPlainText(html) {
+        const temp = document.createElement('div');
+        temp.innerHTML = html || '';
+        return (temp.textContent || '').trim();
+    }
+
+    function validateLength(block) {
+        const textarea = block.querySelector('textarea.rich-editor');
+        const editor = tinymce.get(textarea.id);
+        const content = editor ? editor.getContent({ format: 'raw' }) : textarea.value;
+        const maxLength = Number(container.dataset.maxLength || 4000);
+        const textLength = getPlainText(content).length;
+        const warning = block.querySelector('.length-warning');
+        if (textLength > maxLength) {
+            warning.classList.remove('d-none');
+        } else {
+            warning.classList.add('d-none');
+        }
+
+        return { textLength, maxLength, content, isTooLong: textLength > maxLength };
+    }
+
+    const container = document.getElementById('pagesContainer');
+    const pageList = document.getElementById('pageList');
+        let nextEditorId = container.querySelectorAll('.page-block').length;
+
+    const lastValidEditorHtmlById = {};
+    const isRevertingByEditorId = {};
+
+    function enforceEditorLength(editor) {
+        if (!editor) return;
+        const id = editor.id;
+        if (!id || isRevertingByEditorId[id]) return;
+
+        const block = editor.getElement()?.closest('.page-block');
+        if (!block) return;
+
+        const result = validateLength(block);
+        if (!result.isTooLong) {
+            lastValidEditorHtmlById[id] = result.content;
+            return;
+        }
+
+        // Revert to last known valid content so teacher cannot keep typing past limit.
+        isRevertingByEditorId[id] = true;
+        editor.setContent(lastValidEditorHtmlById[id] ?? '', { format: 'raw' });
+        setTimeout(() => { isRevertingByEditorId[id] = false; }, 0);
+    }
+
+    function initTiny(selector) {
+        tinymce.init({
+            selector,
+            menubar: false,
+            plugins: 'lists link',
+            toolbar: 'undo redo | blocks | bold italic underline | bullist numlist | link',
+            promotion: false,
+            branding: false,
+            height: 320,
+            setup: function(editor) {
+                editor.on('init', function () {
+                    lastValidEditorHtmlById[editor.id] = editor.getContent({ format: 'raw' }) || '';
+                });
+                editor.on('input change', function() {
+                    enforceEditorLength(editor);
+                });
+
+                editor.on('paste', function () {
+                    // paste can quickly exceed limit; enforce immediately.
+                    setTimeout(() => enforceEditorLength(editor), 0);
+                });
+            }
+        });
+    }
+
+    document.querySelectorAll('textarea.rich-editor').forEach((ta) => {
+        initTiny('#' + ta.id);
+    });
+
+        function updatePageList() {
+            pageList.innerHTML = '';
+            container.querySelectorAll('.page-block').forEach((block, index) => {
+                const item = document.createElement('button');
+                item.type = 'button';
+                item.className = 'list-group-item list-group-item-action';
+                item.textContent = `Page ${index + 1}`;
+                item.addEventListener('click', () => block.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+                pageList.appendChild(item);
+            });
+        }
+
+        function reindexPages() {
+            const blocks = container.querySelectorAll('.page-block');
+            blocks.forEach((block, index) => {
+                block.dataset.index = index;
+                block.querySelector('.page-number').textContent = `Page ${index + 1}`;
+                block.querySelectorAll('[data-field]').forEach((input) => {
+                    const field = input.getAttribute('data-field');
+                    input.name = `Pages[${index}].${field}`;
+                });
+
+                const questionBlocks = block.querySelectorAll('.question-block');
+                questionBlocks.forEach((questionBlock, qIndex) => {
+                    questionBlock.dataset.questionIndex = qIndex;
+                    const title = questionBlock.querySelector('strong');
+                    if (title) {
+                        title.textContent = `Question ${qIndex + 1}`;
+                    }
+                    questionBlock.querySelectorAll('[data-field]').forEach((input) => {
+                        const field = input.getAttribute('data-field');
+                        input.name = `Pages[${index}].Questions[${qIndex}].${field}`;
+                    });
+                });
+            });
+            updatePageList();
+        }
+
+        function buildPageBlock(index, insertAfterIndex) {
+            const editorId = `pageContent_${nextEditorId++}`;
+            const quizSection = `
+            <div class="col-12">
+                <button type="button" class="btn btn-sm btn-outline-primary add-quiz">Add Quiz</button>
+            </div>
+            <div class="col-12 quiz-fields" style="display:none">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <label class="form-label mb-0">Questions</label>
+                            <button type="button" class="btn btn-sm btn-outline-secondary add-question">Add Question</button>
+                        </div>
+                    </div>
+                    <div class="col-12 questions-container">
+                        <div class="text-muted small">No questions added yet.</div>
+                    </div>
+                </div>
+            </div>`;
+
+            const html = `
+<div class="card mb-3 page-block" data-index="${index}">
+    <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between mb-2">
+            <span class="badge bg-secondary page-number">Page ${index + 1}</span>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-sm btn-outline-secondary insert-page">Insert Page Below</button>
+                <button type="button" class="btn btn-sm btn-outline-danger delete-page">Delete Page</button>
+            </div>
+        </div>
+        <div class="row g-3">
+            <input type="hidden" data-field="PageId" name="Pages[${index}].PageId" value="" />
+            <input type="hidden" data-field="QuizId" name="Pages[${index}].QuizId" value="" />
+            <div class="col-md-6">
+                <label class="form-label">Page Title</label>
+                <input class="form-control" data-field="PageTitle" name="Pages[${index}].PageTitle" value="Page ${index + 1}" />
+            </div>
+            <div class="col-md-12">
+                <label class="form-label">Content</label>
+                <textarea class="form-control rich-editor" id="${editorId}" data-field="HtmlContent" name="Pages[${index}].HtmlContent"></textarea>
+                <div class="text-danger small d-none length-warning">Content is too long. Please create a new page.</div>
+            </div>
+            ${quizSection}
+        </div>
+    </div>
+</div>`;
+
+            if (insertAfterIndex === null || insertAfterIndex === undefined) {
+                container.insertAdjacentHTML('beforeend', html);
+            } else {
+                const blocks = container.querySelectorAll('.page-block');
+                const target = blocks[insertAfterIndex];
+                target.insertAdjacentHTML('afterend', html);
+            }
+
+            initTiny('#' + editorId);
+            reindexPages();
+        }
+
+        document.getElementById('pagesContainer').addEventListener('click', function(e) {
+            if (e.target.classList.contains('add-quiz')) {
+                const block = e.target.closest('.page-block');
+                const quizFields = block.querySelector('.quiz-fields');
+                quizFields.style.display = 'block';
+                const existingQuestions = block.querySelectorAll('.question-block').length;
+                if (existingQuestions === 0) {
+                    addQuestion(block);
+                }
+            }
+
+            if (e.target.classList.contains('add-question')) {
+                const block = e.target.closest('.page-block');
+                addQuestion(block);
+            }
+
+            if (e.target.classList.contains('delete-question')) {
+                const block = e.target.closest('.page-block');
+                const questionBlock = e.target.closest('.question-block');
+                questionBlock.remove();
+
+                const remaining = block.querySelectorAll('.question-block').length;
+                if (remaining === 0) {
+                    const quizFields = block.querySelector('.quiz-fields');
+                    quizFields.style.display = 'none';
+                    const placeholder = block.querySelector('.questions-container');
+                    placeholder.innerHTML = '<div class="text-muted small">No questions added yet.</div>';
+                }
+
+                reindexPages();
+            }
+
+            if (e.target.classList.contains('delete-page')) {
+                const blocks = container.querySelectorAll('.page-block');
+                if (blocks.length <= 2) {
+                    alert('A material must contain at least 2 pages.');
+                    return;
+                }
+                const block = e.target.closest('.page-block');
+                const textarea = block.querySelector('textarea.rich-editor');
+                const editor = tinymce.get(textarea.id);
+                if (editor) {
+                    editor.remove();
+                }
+                block.remove();
+                reindexPages();
+            }
+
+            if (e.target.classList.contains('insert-page')) {
+                const block = e.target.closest('.page-block');
+                const index = Number(block.dataset.index || 0);
+                buildPageBlock(index + 1, index);
+            }
+        });
+
+        document.getElementById('addPageBtn').addEventListener('click', function() {
+            const index = container.querySelectorAll('.page-block').length;
+            buildPageBlock(index, null);
+        });
+
+        function addQuestion(block) {
+            const questionsContainer = block.querySelector('.questions-container');
+            const pageIndex = Number(block.dataset.index || 0);
+            const questionIndex = questionsContainer.querySelectorAll('.question-block').length;
+
+            const html = `
+<div class="border rounded p-3 mb-3 question-block" data-question-index="${questionIndex}">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+        <strong>Question ${questionIndex + 1}</strong>
+        <button type="button" class="btn btn-sm btn-outline-danger delete-question">Delete</button>
+    </div>
+    <div class="row g-2">
+        <div class="col-md-12">
+            <label class="form-label">Question</label>
+            <input class="form-control" data-field="QuestionText" name="Pages[${pageIndex}].Questions[${questionIndex}].QuestionText" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Option A</label>
+            <input class="form-control" data-field="OptionA" name="Pages[${pageIndex}].Questions[${questionIndex}].OptionA" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Option B</label>
+            <input class="form-control" data-field="OptionB" name="Pages[${pageIndex}].Questions[${questionIndex}].OptionB" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Option C</label>
+            <input class="form-control" data-field="OptionC" name="Pages[${pageIndex}].Questions[${questionIndex}].OptionC" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Option D</label>
+            <input class="form-control" data-field="OptionD" name="Pages[${pageIndex}].Questions[${questionIndex}].OptionD" />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Correct Option</label>
+            <select class="form-select" data-field="CorrectOption" name="Pages[${pageIndex}].Questions[${questionIndex}].CorrectOption">
+                <option value="A" selected>A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="D">D</option>
+            </select>
+        </div>
+    </div>
+</div>`;
+
+            if (questionIndex === 0) {
+                questionsContainer.innerHTML = '';
+            }
+
+            questionsContainer.insertAdjacentHTML('beforeend', html);
+            reindexPages();
+        }
+
+        document.getElementById('chapterForm').addEventListener('submit', function() {
+            tinymce.triggerSave();
+            container.querySelectorAll('.page-block').forEach(validateLength);
+        });
+
+        container.querySelectorAll('.page-block').forEach((block) => {
+            const textarea = block.querySelector('textarea.rich-editor');
+            const editor = tinymce.get(textarea.id);
+            if (editor) {
+                editor.on('input', () => enforceEditorLength(editor));
+                editor.on('change', () => enforceEditorLength(editor));
+            } else {
+                let lastValid = textarea.value || '';
+                textarea.addEventListener('input', () => {
+                    const result = validateLength(block);
+                    if (!result.isTooLong) {
+                        lastValid = textarea.value;
+                        return;
+                    }
+
+                    textarea.value = lastValid;
+                    validateLength(block);
+                });
+            }
+        });
+
+        updatePageList();
+</script>
+}

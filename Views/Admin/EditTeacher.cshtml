@@ -1,0 +1,54 @@
+@model SmartELibrary.ViewModels.EditTeacherViewModel
+@{
+    ViewData["Title"] = "Edit Teacher";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="mb-3">Edit Teacher</h5>
+
+                <form asp-action="EditTeacher" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="UserId" />
+                    <div asp-validation-summary="All" class="text-danger mb-2"></div>
+
+                    <div class="mb-2">
+                        <label asp-for="TeacherId" class="form-label"></label>
+                        <input asp-for="TeacherId" class="form-control" />
+                    </div>
+                    <div class="mb-2">
+                        <label asp-for="Name" class="form-label"></label>
+                        <input asp-for="Name" class="form-control" />
+                    </div>
+                    <div class="mb-2">
+                        <label asp-for="CodeName" class="form-label"></label>
+                        <input asp-for="CodeName" class="form-control" />
+                    </div>
+                    <div class="mb-2">
+                        <label asp-for="Email" class="form-label"></label>
+                        <input asp-for="Email" class="form-control" />
+                    </div>
+                    <div class="mb-2">
+                        <label asp-for="Phone" class="form-label"></label>
+                        <input asp-for="Phone" class="form-control" />
+                    </div>
+                    <div class="form-check mb-3">
+                        <input asp-for="IsActive" class="form-check-input" />
+                        <label asp-for="IsActive" class="form-check-label"></label>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-primary" type="submit">Save Changes</button>
+                        <a asp-action="Teachers" class="btn btn-outline-secondary">Back</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

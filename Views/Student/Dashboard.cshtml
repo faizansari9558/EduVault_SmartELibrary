@@ -1,0 +1,93 @@
+@model SmartELibrary.ViewModels.StudentDashboardViewModel
+@{
+    ViewData["Title"] = "Student Dashboard";
+}
+
+@if (TempData["Success"] is not null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+@if (ViewBag.HasApprovedEnrollment is not null && !(bool)ViewBag.HasApprovedEnrollment)
+{
+    <div class="alert alert-warning">Your semester enrollment is pending. Digital Library access will be available after admin approval.</div>
+}
+
+<div class="card mb-4">
+    <div class="card-body table-responsive">
+        <h6>Enrolled Subjects</h6>
+        <table class="table table-sm">
+            <thead><tr><th>Semester</th><th>Subject</th></tr></thead>
+            <tbody>
+            @if (Model.Subjects.Count == 0)
+            {
+                <tr><td colspan="2" class="text-muted">No approved subjects yet.</td></tr>
+            }
+            else
+            {
+                @foreach (var item in Model.Subjects)
+                {
+                    <tr>
+                        <td>@item.SemesterName</td>
+                        <td>@item.SubjectName</td>
+                    </tr>
+                }
+            }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@if (Model.SubjectFiles.Count > 0)
+{
+    <h6 class="mb-3">Study Materials</h6>
+
+    @foreach (var group in Model.SubjectFiles)
+    {
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center py-2">
+                <span class="fw-semibold">@group.SubjectName</span>
+                <span class="text-muted small">@group.SemesterName</span>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Title</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>Uploaded</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var file in group.Files)
+                        {
+                            var icon = file.MaterialType switch
+                            {
+                                "Pdf"          => "📄",
+                                "Ppt" or "Pptx" => "📊",
+                                "Image"        => "🖼️",
+                                "ExternalLink" => "🔗",
+                                _              => "📁"
+                            };
+                            var isExternal = file.MaterialType == "ExternalLink";
+                            var href = isExternal ? file.FilePathOrUrl : file.FilePathOrUrl;
+                            <tr>
+                                <td>@icon @file.Title</td>
+                                <td><span class="badge bg-secondary">@file.MaterialType</span></td>
+                                <td class="text-muted small">@file.Description</td>
+                                <td class="text-muted small">@file.UploadedAtUtc.ToLocalTime().ToString("dd MMM yyyy")</td>
+                                <td>
+                                    <a href="@href" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        @(isExternal ? "Open" : "View")
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+}

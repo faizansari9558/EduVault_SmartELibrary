@@ -1,0 +1,40 @@
+@model IEnumerable<SmartELibrary.Models.Semester>
+@{
+    ViewData["Title"] = "Semesters";
+}
+
+<div class="row g-3">
+    <div class="col-md-12">
+        <div class="card"><div class="card-body table-responsive">
+            <p class="text-muted mb-3">Semesters are fixed from Semester - 1 to Semester - 10. Update dates and status as needed for the current academic year.</p>
+            <table class="table table-sm admin-table"><thead><tr><th>Name</th><th>Start Date</th><th>End Date</th><th>Status</th><th>Actions</th></tr></thead><tbody>
+            @foreach (var semester in Model)
+            {
+                var formId = $"semesterForm_{semester.Id}";
+                <tr>
+                    <td><strong>@semester.Name</strong></td>
+                    <td>
+                        <input type="date" name="startDate" class="form-control form-control-sm" value="@(semester.StartDate?.ToString("yyyy-MM-dd"))" form="@formId" />
+                    </td>
+                    <td>
+                        <input type="date" name="endDate" class="form-control form-control-sm" value="@(semester.EndDate?.ToString("yyyy-MM-dd"))" form="@formId" />
+                    </td>
+                    <td>
+                        <input type="hidden" name="isActive" value="false" form="@formId" />
+                        <div class="form-check form-switch mb-0">
+                            <input class="form-check-input" type="checkbox" name="isActive" value="true" @(semester.IsActive ? "checked" : null) form="@formId" />
+                        </div>
+                    </td>
+                    <td>
+                        <form id="@formId" asp-action="UpdateSemester" method="post" class="d-inline">
+                            <input type="hidden" name="id" value="@semester.Id" />
+                        </form>
+                        <button type="submit" class="btn btn-primary btn-sm" form="@formId">Save</button>
+                        <a asp-action="SemesterPromotion" asp-route-semesterId="@semester.Id" class="btn btn-outline-primary btn-sm ms-1">Promote</a>
+                    </td>
+                </tr>
+            }
+            </tbody></table>
+        </div></div>
+    </div>
+</div>

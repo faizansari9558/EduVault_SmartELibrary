@@ -1,0 +1,64 @@
+@model SmartELibrary.ViewModels.SemesterResultIndexViewModel
+@{
+    ViewData["Title"] = "Semester Results";
+}
+
+<h2 class="mb-4">Semester Results</h2>
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success">@success</div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger">@error</div>
+}
+
+<div class="card">
+    <div class="card-header">All Semesters</div>
+    <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0 admin-table">
+            <thead class="table-light">
+                <tr>
+                    <th>Semester</th>
+                    <th class="text-center">Approved Students</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center">Published At</th>
+                    <th class="text-center">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Semesters.Any())
+                {
+                    <tr>
+                        <td colspan="5" class="text-center text-muted py-3">No semesters found.</td>
+                    </tr>
+                }
+                @foreach (var row in Model.Semesters)
+                {
+                    <tr>
+                        <td><strong>@row.SemesterName</strong></td>
+                        <td class="text-center">@row.ApprovedStudentCount</td>
+                        <td class="text-center">
+                            @if (row.IsPublished)
+                            {
+                                <span class="badge bg-success">Published</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">Not Published</span>
+                            }
+                        </td>
+                        <td class="text-center">
+                            @(row.PublishedAtUtc.HasValue ? row.PublishedAtUtc.Value.ToLocalTime().ToString("dd MMM yyyy, hh:mm tt") : "-")
+                        </td>
+                        <td class="text-center">
+                            <a asp-action="SemesterResultDetail" asp-route-semesterId="@row.SemesterId"
+                               class="btn btn-sm btn-outline-primary">View Results</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

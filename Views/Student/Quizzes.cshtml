@@ -1,0 +1,132 @@
+@model SmartELibrary.ViewModels.StudentQuizListViewModel
+@{
+    ViewData["Title"] = "My Quizzes";
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <h4 class="mb-0">📝 My Quizzes</h4>
+</div>
+
+@if (TempData["Error"] is not null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">@TempData["Error"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+}
+
+@if (TempData["QuizScore"] is not null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        ✅ Quiz submitted! <strong>@TempData["QuizTitle"]</strong> — Your score: <strong>@TempData["QuizScore"]%</strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (!Model.Quizzes.Any())
+{
+    <div class="card">
+        <div class="card-body text-muted text-center py-5">
+            No quizzes available for your enrolled subjects yet.
+        </div>
+    </div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var q in Model.Quizzes)
+        {
+            string borderClass = q.Status switch
+            {
+                "Upcoming" => "border-warning",
+                "Expired"  => "border-secondary",
+                _          => q.AlreadyAttempted ? "border-success" : "border-primary"
+            };
+
+            string badgeClass = q.Status switch
+            {
+                "Upcoming" => "bg-warning text-dark",
+                "Expired"  => "bg-secondary",
+                _          => q.AlreadyAttempted ? "bg-success" : "bg-primary"
+            };
+
+            string badgeText = q.Status switch
+            {
+                "Upcoming" => "🕐 Upcoming",
+                "Expired"  => "⛔ Expired",
+                _          => q.AlreadyAttempted ? "✅ Attempted" : "🟢 Active"
+            };
+
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border @borderClass">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h6 class="card-title mb-0 fw-semibold">@q.Title</h6>
+                            <span class="badge @badgeClass ms-2 text-nowrap">@badgeText</span>
+                        </div>
+                        <div class="text-muted small mb-3">@q.SubjectName &mdash; @q.SemesterName</div>
+
+                        <div class="d-flex flex-wrap gap-2 mb-3 small">
+                            <span class="badge bg-light text-dark border">❓ @q.TotalQuestions questions</span>
+                            @if (q.TimeLimitMinutes.HasValue)
+                            {
+                                <span class="badge bg-warning text-dark border">⏱ @q.TimeLimitMinutes min</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-light text-dark border">⏱ Unlimited</span>
+                            }
+                        </div>
+
+                        @if (q.AvailableFromUtc.HasValue || q.AvailableToUtc.HasValue)
+                        {
+                            <div class="small text-muted mb-2">
+                                @if (q.AvailableFromUtc.HasValue)
+                                {
+                                    <div>📅 From: @q.AvailableFromUtc.Value.ToLocalTime().ToString("dd MMM yyyy, hh:mm tt")</div>
+                                }
+                                @if (q.AvailableToUtc.HasValue)
+                                {
+                                    <div class="text-danger">⏰ Deadline: @q.AvailableToUtc.Value.ToLocalTime().ToString("dd MMM yyyy, hh:mm tt")</div>
+                                }
+                            </div>
+                        }
+
+                        @if (q.AlreadyAttempted && q.PreviousScore.HasValue)
+                        {
+                            <div class="mb-2">
+                                <div class="text-muted small mb-1">Your Score</div>
+                                <div class="progress mb-1" style="height:8px;">
+                                    @{
+                                        string pbClass = (double)q.PreviousScore.Value >= 80 ? "bg-success"
+                                            : (double)q.PreviousScore.Value >= 40 ? "bg-warning"
+                                            : "bg-danger";
+                                    }
+                                    <div class="progress-bar @pbClass" style="width:@q.PreviousScore%"></div>
+                                </div>
+                                <strong class="small">@q.PreviousScore%</strong>
+                            </div>
+                        }
+
+                        <div class="mt-auto">
+                            @if (q.Status == "Active" && !q.AlreadyAttempted)
+                            {
+                                <a asp-action="AttemptQuiz" asp-route-quizId="@q.QuizId"
+                                   class="btn btn-primary btn-sm w-100">Start Quiz →</a>
+                            }
+                            else if (q.Status == "Active" && q.AlreadyAttempted)
+                            {
+                                <button class="btn btn-outline-success btn-sm w-100" disabled>Already Submitted</button>
+                            }
+                            else if (q.Status == "Upcoming")
+                            {
+                                <button class="btn btn-outline-warning btn-sm w-100" disabled>Not Available Yet</button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-outline-secondary btn-sm w-100" disabled>Expired</button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}

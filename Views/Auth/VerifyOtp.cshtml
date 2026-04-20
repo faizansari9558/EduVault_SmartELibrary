@@ -1,0 +1,33 @@
+@{
+    ViewData["Title"] = "Verify OTP";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-5">
+        <div class="card auth-card">
+            <div class="card-body">
+                <h4 class="mb-3">OTP Verification</h4>
+                @if (TempData["Success"] is not null)
+                {
+                    <div class="alert alert-success">@TempData["Success"]</div>
+                }
+                @if (TempData["DebugOtp"] is not null)
+                {
+                    <div class="alert alert-info">Demo OTP: <strong>@TempData["DebugOtp"]</strong></div>
+                }
+                <form asp-action="VerifyOtp" method="post">
+                    <div asp-validation-summary="All" class="text-danger mb-2"></div>
+                    <div class="mb-2">
+                        <label class="form-label">Phone Number</label>
+                        <input name="phoneNumber" class="form-control" value="@ViewBag.PhoneNumber" required />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">OTP</label>
+                        <input name="otpCode" class="form-control" maxlength="6" required />
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Verify</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,99 @@
+@model SmartELibrary.ViewModels.MaterialUploadViewModel
+@using SmartELibrary.Models
+@{
+    ViewData["Title"] = "Upload File Material";
+    var subjects = ViewBag.Subjects as List<Subject> ?? new();
+    var fileTypes = new[]
+    {
+        MaterialType.Pdf, MaterialType.Ppt, MaterialType.Pptx,
+        MaterialType.Image, MaterialType.ExternalLink
+    };
+}
+
+<div class="card">
+    <div class="card-header fw-bold">Upload File Material (PDF / PPT / Image / Link)</div>
+    <div class="card-body">
+        <form asp-action="UploadFile" method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="Title" class="form-label">Title <span class="text-danger">*</span></label>
+                    <input asp-for="Title" class="form-control" placeholder="e.g. Chapter 1 Slides" />
+                    <span asp-validation-for="Title" class="text-danger small"></span>
+                </div>
+
+                <div class="col-md-6">
+                    <label asp-for="SubjectId" class="form-label">Subject <span class="text-danger">*</span></label>
+                    <select asp-for="SubjectId" class="form-select" required>
+                        <option value="">— Select Subject —</option>
+                        @foreach (var s in subjects)
+                        {
+                            <option value="@s.Id">@s.Semester?.Name — @s.Name</option>
+                        }
+                    </select>
+                    <span asp-validation-for="SubjectId" class="text-danger small"></span>
+                </div>
+
+                <div class="col-12">
+                    <label asp-for="Description" class="form-label">Description</label>
+                    <textarea asp-for="Description" class="form-control" rows="2"></textarea>
+                </div>
+
+                <div class="col-md-4">
+                    <label asp-for="MaterialType" class="form-label">File Type <span class="text-danger">*</span></label>
+                    <select asp-for="MaterialType" id="materialType" class="form-select">
+                        @foreach (var t in fileTypes)
+                        {
+                            <option value="@((int)t)">@t.ToString()</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-4 d-flex align-items-end">
+                    <div class="form-check form-switch ms-1">
+                        <input asp-for="IsPublic" class="form-check-input" type="checkbox" />
+                        <label asp-for="IsPublic" class="form-check-label">Visible to all students (no enrollment needed)</label>
+                    </div>
+                </div>
+
+                <div class="col-12" id="fileSection">
+                    <label asp-for="File" class="form-label">File <span class="text-danger">*</span> <span class="text-muted small">(Max 50 MB)</span></label>
+                    <input asp-for="File" class="form-control" type="file"
+                           accept=".pdf,.ppt,.pptx,.png,.jpg,.jpeg,.gif,.webp,.bmp" />
+                    <span asp-validation-for="File" class="text-danger small"></span>
+                </div>
+
+                <div class="col-12 d-none" id="urlSection">
+                    <label asp-for="ExternalUrl" class="form-label">External URL <span class="text-danger">*</span></label>
+                    <input asp-for="ExternalUrl" class="form-control" type="url" placeholder="https://..." />
+                    <span asp-validation-for="ExternalUrl" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="mt-4 d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Upload</button>
+                <a asp-action="Materials" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(function () {
+    var sel  = document.getElementById("materialType");
+    var file = document.getElementById("fileSection");
+    var url  = document.getElementById("urlSection");
+    var externalVal = "@((int)MaterialType.ExternalLink)";
+
+    function toggle() {
+        var isExt = sel.value === externalVal;
+        file.classList.toggle("d-none", isExt);
+        url.classList.toggle("d-none", !isExt);
+    }
+    sel.addEventListener("change", toggle);
+    toggle();
+})();
+</script>
+}

@@ -1,0 +1,44 @@
+.card h6 {
+	color: #6c757d;
+	margin-bottom: .25rem;
+}
+
+.admin-table {
+	width: 100%;
+	margin-bottom: 0;
+	table-layout: auto;
+}
+
+.admin-table th,
+.admin-table td {
+	white-space: nowrap;
+	vertical-align: middle;
+	padding: .55rem .65rem;
+}
+
+.admin-table thead th {
+	font-weight: 600;
+}
+
+.admin-table .badge,
+.admin-table .btn,
+.admin-table .form-check-input {
+	white-space: nowrap;
+}
+
+.admin-table .actions-col,
+.admin-table .created-col,
+.admin-table .date-col {
+	white-space: nowrap;
+}
+
+/* Shared fallback: keep admin modals centered even if a page misses modal-dialog-centered. */
+.modal .modal-dialog {
+	min-height: calc(100% - 1rem);
+	display: flex;
+	align-items: center;
+}
+
+.modal .modal-content {
+	width: 100%;
+}

@@ -1,0 +1,9 @@
+@{
+    ViewData["Title"] = "Teacher Dashboard";
+}
+
+<div class="row g-3">
+    <div class="col-md-4"><div class="card teacher-kpi p-3"><h6>Uploaded Materials</h6><h3>@ViewBag.MaterialCount</h3></div></div>
+    <div class="col-md-4"><div class="card teacher-kpi p-3"><h6>Created Quizzes</h6><h3>@ViewBag.QuizCount</h3></div></div>
+    <div class="col-md-4"><div class="card teacher-kpi p-3"><h6>Low Engagement Alerts</h6><h3>@ViewBag.LowEngagementCount</h3></div></div>
+</div>

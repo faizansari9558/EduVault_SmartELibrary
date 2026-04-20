@@ -1,0 +1,86 @@
+@model SmartELibrary.ViewModels.SemesterPromotionDashboardViewModel
+@{
+    ViewData["Title"] = "Semester Promotion";
+}
+
+<div class="mb-3">
+    <a asp-action="Semesters" class="btn btn-outline-secondary">Back</a>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-3">
+        <div class="card"><div class="card-body">
+            <div class="text-muted">Current Semester</div>
+            <h5 class="mb-0">@Model.CurrentSemesterName</h5>
+        </div></div>
+    </div>
+    <div class="col-md-3">
+        <div class="card"><div class="card-body">
+            <div class="text-muted">Next Semester</div>
+            <h5 class="mb-0">@(string.IsNullOrWhiteSpace(Model.NextSemesterName) ? "-" : Model.NextSemesterName)</h5>
+        </div></div>
+    </div>
+    <div class="col-md-2">
+        <div class="card"><div class="card-body">
+            <div class="text-muted">Total</div>
+            <h5 class="mb-0">@Model.TotalStudents</h5>
+        </div></div>
+    </div>
+    <div class="col-md-2">
+        <div class="card"><div class="card-body">
+            <div class="text-muted">Promote</div>
+            <h5 class="mb-0 text-success">@Model.StudentsToBePromoted</h5>
+        </div></div>
+    </div>
+    <div class="col-md-2">
+        <div class="card"><div class="card-body">
+            <div class="text-muted">Hold</div>
+            <h5 class="mb-0 text-danger">@Model.StudentsOnHold</h5>
+        </div></div>
+    </div>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body">
+        <p class="text-muted mb-3">Hold is only a review flag. The promote button moves every student in this semester to the next semester in one click.</p>
+        <form asp-action="SavePromotionHold" method="post" class="mb-3">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="semesterId" value="@Model.CurrentSemesterId" />
+            <div class="table-responsive">
+                <table class="table table-sm align-middle admin-table">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Enrollment No</th>
+                            <th>Phone</th>
+                            <th>Current Semester</th>
+                            <th>Current Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var student in Model.Students)
+                    {
+                        <tr>
+                            <td>@student.StudentName</td>
+                            <td>@student.EnrollmentNumber</td>
+                            <td>@student.PhoneNumber</td>
+                            <td>@student.CurrentSemesterName</td>
+                            <td>
+                                <input type="checkbox" name="holdStudentIds" value="@student.StudentId" @(student.PromotionStatus == "Hold" ? "checked" : null) />
+                                <span class="ms-2 badge @(student.PromotionStatus == "Hold" ? "bg-danger" : "bg-success")">@student.PromotionStatus</span>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+            <button class="btn btn-outline-secondary">Save Hold Flag</button>
+        </form>
+
+        <form asp-action="PromoteStudents" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="semesterId" value="@Model.CurrentSemesterId" />
+            <button class="btn btn-primary" @(Model.NextSemesterId.HasValue ? null : "disabled")>Promote to Next Semester</button>
+        </form>
+    </div>
+</div>

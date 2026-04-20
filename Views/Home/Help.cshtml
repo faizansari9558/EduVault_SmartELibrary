@@ -1,0 +1,100 @@
+@{
+    ViewData["Title"] = "Help Center";
+}
+
+<style>
+    .info-page-section { padding: 40px 20px 60px; max-width: 900px; margin: 0 auto; min-height: calc(100vh - 200px); }
+    .info-card { background: var(--glass-bg, rgba(20, 20, 25, 0.7)); border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1)); border-radius: 20px; padding: 40px; backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(138, 43, 226, 0.1); position: relative; overflow: hidden; }
+    .info-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, #22d3ee, transparent); opacity: 0.8; }
+    .info-title { font-size: 2.5rem; font-weight: 800; margin-bottom: 20px; text-align: center; letter-spacing: -0.5px; background: linear-gradient(90deg, #fff, #a5f3fc); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .info-subtitle { text-align: center; color: rgba(226, 232, 240, 0.8); font-size: 1.1rem; margin-bottom: 40px; }
+    
+    .guide-section { margin-bottom: 40px; background: rgba(0,0,0,0.2); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); overflow: hidden; }
+    .guide-header { padding: 20px 25px; background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 15px; }
+    .guide-icon { font-size: 1.5rem; }
+    .guide-header h3 { margin: 0; font-size: 1.3rem; color: #fff; font-weight: 700; }
+    
+    .guide-list { padding: 25px; margin: 0; counter-reset: guide-counter; list-style-type: none; }
+    .guide-list li { position: relative; padding-left: 45px; margin-bottom: 18px; color: rgba(226, 232, 240, 0.9); line-height: 1.5; font-size: 1.05rem; }
+    .guide-list li:last-child { margin-bottom: 0; }
+    .guide-list li::before { counter-increment: guide-counter; content: counter(guide-counter); position: absolute; left: 0; top: -2px; width: 30px; height: 30px; background: rgba(138, 43, 226, 0.2); border: 1px solid rgba(138, 43, 226, 0.5); color: #e5eefb; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 0.9rem; font-weight: 700; }
+    
+    .troubleshoot-box { background: linear-gradient(135deg, rgba(220, 38, 38, 0.1), rgba(153, 27, 27, 0.2)); padding: 30px; border-radius: 16px; border: 1px solid rgba(239, 68, 68, 0.3); margin-top: 20px; }
+    .troubleshoot-box h3 { color: #fca5a5; font-size: 1.3rem; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+    .troubleshoot-list { padding-left: 20px; color: #fecaca; margin-bottom: 0; }
+    .troubleshoot-list li { margin-bottom: 10px; }
+    .troubleshoot-list li:last-child { margin-bottom: 0; }
+    
+    @@media (max-width: 768px) {
+        .info-card { padding: 25px 20px; }
+        .info-title { font-size: 2rem; }
+        .guide-list { padding: 20px; }
+    }
+</style>
+
+<div class="info-page-section">
+    <div class="info-card">
+        <h1 class="info-title">Help Center</h1>
+        <p class="info-subtitle">Understand how to use the EduVault platform effectively.</p>
+        
+        <div class="info-content">
+            
+            <div class="guide-section">
+                <div class="guide-header">
+                    <span class="guide-icon">🎓</span>
+                    <h3>Student Guide</h3>
+                </div>
+                <ol class="guide-list">
+                    <li>Login using your email account.</li>
+                    <li>Request enrollment for your semester.</li>
+                    <li>Wait for admin approval.</li>
+                    <li>Browse the library by semester and subject.</li>
+                    <li>Open chapter materials and read page by page.</li>
+                    <li>Attempt quizzes after completing pages.</li>
+                    <li>Track your progress in the dashboard.</li>
+                </ol>
+            </div>
+
+            <div class="guide-section">
+                <div class="guide-header">
+                    <span class="guide-icon">👨‍🏫</span>
+                    <h3>Teacher Guide</h3>
+                </div>
+                <ol class="guide-list" style="--counter-bg: rgba(79, 156, 249, 0.2); --counter-border: rgba(79, 156, 249, 0.5);">
+                    <style>.guide-section:nth-child(2) .guide-list li::before { background: rgba(79, 156, 249, 0.2); border-color: rgba(79, 156, 249, 0.5); }</style>
+                    <li>Login to the teacher dashboard.</li>
+                    <li>Upload chapter materials for assigned subjects.</li>
+                    <li>Add multiple pages per chapter.</li>
+                    <li>Attach quizzes to chapter pages if needed.</li>
+                    <li>Monitor student engagement and progress.</li>
+                </ol>
+            </div>
+
+            <div class="guide-section">
+                <div class="guide-header">
+                    <span class="guide-icon">⚙️</span>
+                    <h3>Admin Guide</h3>
+                </div>
+                <ol class="guide-list" style="--counter-bg: rgba(34, 211, 238, 0.2); --counter-border: rgba(34, 211, 238, 0.5);">
+                    <style>.guide-section:nth-child(3) .guide-list li::before { background: rgba(34, 211, 238, 0.2); border-color: rgba(34, 211, 238, 0.5); }</style>
+                    <li>Manage students and teachers.</li>
+                    <li>Create semesters and subjects.</li>
+                    <li>Assign teachers to subjects.</li>
+                    <li>Approve semester enrollment requests.</li>
+                    <li>View student progress reports and analytics.</li>
+                </ol>
+            </div>
+
+            <div class="troubleshoot-box">
+                <h3><span>⚠️</span> Troubleshooting</h3>
+                <p style="color: #fecaca; margin-bottom: 15px;">If you cannot access study materials or quizzes, check that:</p>
+                <ul class="troubleshoot-list">
+                    <li>Your semester enrollment is approved</li>
+                    <li>Your account is approved by the admin</li>
+                    <li>You are logged into the correct account</li>
+                </ul>
+            </div>
+
+        </div>
+    </div>
+</div>

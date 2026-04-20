@@ -1,0 +1,174 @@
+@model SmartELibrary.Models.Quiz
+@{
+    ViewData["Title"] = "Attempt Quiz";
+    var timeLimitMinutes = ViewBag.TimeLimitMinutes as int?;
+}
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+        <h4 class="mb-0">📝 @Model.Title</h4>
+        <div class="text-muted small">@Model.Subject?.Name &mdash; @Model.QuizQuestions.Count questions</div>
+    </div>
+    @if (timeLimitMinutes.HasValue)
+    {
+        <div class="text-center">
+            <div class="text-muted small mb-1">Time Remaining</div>
+            <div id="timerDisplay" class="fw-bold fs-4 text-danger">--:--</div>
+        </div>
+    }
+</div>
+
+<form asp-action="AttemptQuiz" method="post" id="quizForm">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="QuizId" value="@Model.Id" />
+
+    @{ var qNum = 0; }
+    @foreach (var q in Model.QuizQuestions.OrderBy(x => x.Id))
+    {
+        qNum++;
+        <div class="card mb-3">
+            <div class="card-body">
+                <p class="fw-semibold mb-3">Q@(qNum). @q.QuestionText</p>
+                <div class="d-flex flex-column gap-2">
+                    @foreach (var (letter, text) in new[] { ("A", q.OptionA), ("B", q.OptionB), ("C", q.OptionC), ("D", q.OptionD) })
+                    {
+                        <label class="d-flex align-items-center gap-2 p-2 rounded border option-label" style="cursor:pointer;">
+                            <input type="radio" name="Answers[@q.Id]" value="@letter" class="form-check-input m-0" required />
+                            <span class="badge bg-secondary me-1">@letter</span> @text
+                        </label>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="d-flex gap-2 mb-4">
+        <button type="submit" class="btn btn-success">✅ Submit Quiz</button>
+        <a asp-action="Quizzes" class="btn btn-outline-secondary">Cancel</a>
+    </div>
+</form>
+
+<div class="alert alert-warning" id="quizRestrictionNotice">
+    Quiz restriction is active: right-click is disabled and leaving this tab/window will auto-submit your quiz.
+</div>
+
+<style>
+    .option-label:has(input:checked) {
+        background-color: #e8f4ff;
+        border-color: #0d6efd !important;
+    }
+    .option-label:hover {
+        background-color: #f8f9fa;
+    }
+</style>
+
+@section Scripts {
+<script>
+(function () {
+    var timeLimitSeconds = @(timeLimitMinutes.HasValue ? timeLimitMinutes.Value * 60 : 0);
+    var form = document.getElementById('quizForm');
+    if (!form) {
+        return;
+    }
+
+    var quizSubmitted = false;
+    var switchingHandled = false;
+
+    function submitDueToViolation(reason) {
+        if (quizSubmitted || switchingHandled) {
+            return;
+        }
+
+        switchingHandled = true;
+        var hiddenReason = document.createElement('input');
+        hiddenReason.type = 'hidden';
+        hiddenReason.name = 'AntiCheatReason';
+        hiddenReason.value = reason;
+        form.appendChild(hiddenReason);
+
+        alert('Quiz auto-submitted because you left the quiz tab/window.');
+        form.submit();
+    }
+
+    form.addEventListener('submit', function () {
+        quizSubmitted = true;
+    });
+
+    document.addEventListener('contextmenu', function (e) {
+        if (quizSubmitted) {
+            return;
+        }
+        e.preventDefault();
+    });
+
+    // Block common inspection/copy shortcuts during quiz.
+    document.addEventListener('keydown', function (e) {
+        if (quizSubmitted) {
+            return;
+        }
+
+        var key = (e.key || '').toLowerCase();
+        var ctrl = e.ctrlKey || e.metaKey;
+        var blocked =
+            key === 'f12' ||
+            (ctrl && (key === 'u' || key === 's' || key === 'p' || key === 'c' || key === 'x' || key === 'v')) ||
+            (ctrl && e.shiftKey && (key === 'i' || key === 'j' || key === 'c'));
+
+        if (blocked) {
+            e.preventDefault();
+        }
+    });
+
+    document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'hidden') {
+            submitDueToViolation('visibility_hidden');
+        }
+    });
+
+    window.addEventListener('blur', function () {
+        if (!document.hasFocus()) {
+            submitDueToViolation('window_blur');
+        }
+    });
+
+    if (timeLimitSeconds > 0) {
+        var totalSeconds = timeLimitSeconds;
+        var remaining = totalSeconds;
+        var display = document.getElementById('timerDisplay');
+
+        function updateDisplay() {
+            if (!display) {
+                return;
+            }
+            var m = Math.floor(remaining / 60);
+            var s = remaining % 60;
+            display.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+            if (remaining <= 30) {
+                display.classList.add('text-danger');
+            } else {
+                display.classList.remove('text-danger');
+                display.style.color = remaining <= 60 ? 'orange' : '';
+            }
+        }
+
+        updateDisplay();
+
+        var interval = setInterval(function () {
+            if (quizSubmitted) {
+                clearInterval(interval);
+                return;
+            }
+            remaining--;
+            updateDisplay();
+            if (remaining <= 0) {
+                clearInterval(interval);
+                if (display) {
+                    display.textContent = '00:00';
+                }
+                form.submit();
+            }
+        }, 1000);
+    }
+})();
+</script>
+}

@@ -1,0 +1,280 @@
+/* Auth Specific Overrides */
+.auth-card {
+  max-width: 540px;
+  margin: 2rem auto;
+  padding: 1.5rem;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3), 0 0 20px rgba(138, 43, 226, 0.15) !important;
+}
+
+.auth-card h4 {
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+/* Fix: dark background for all inputs inside auth-card */
+.auth-card .form-control {
+  background-color: rgba(255, 255, 255, 0.07) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 10px;
+}
+
+.auth-card .form-select {
+  background-color: rgba(255, 255, 255, 0.07) !important;
+  color: #fff !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 10px;
+}
+
+.auth-card .form-select:focus {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(138, 43, 226, 0.7) !important;
+  box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.2) !important;
+  color: #fff !important;
+}
+
+/* Keep option text readable when native dropdown opens on light popup backgrounds. */
+.auth-card .form-select option {
+  background-color: #2a1f43;
+  color: #ffffff;
+}
+
+.auth-card .form-control::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.auth-card .form-control:focus {
+  background-color: rgba(255, 255, 255, 0.12) !important;
+  border-color: rgba(138, 43, 226, 0.7) !important;
+  box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.2) !important;
+  color: #fff !important;
+}
+
+/* Autofill fix — prevents browser from overriding the dark background */
+.auth-card .form-control:-webkit-autofill,
+.auth-card .form-control:-webkit-autofill:hover,
+.auth-card .form-control:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0px 1000px #1a1030 inset !important;
+  -webkit-text-fill-color: #fff !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Password toggle wrapper */
+.password-wrapper {
+  position: relative;
+}
+
+.password-wrapper .form-control {
+  padding-right: 2.8rem;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0.6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0.3rem;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: color 0.2s ease, background 0.2s ease;
+  z-index: 5;
+  line-height: 1;
+}
+
+.password-toggle:hover {
+  color: #c084fc;
+  background: rgba(192, 132, 252, 0.1);
+}
+
+.password-toggle:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+.password-toggle svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.auth-login-shell {
+  align-items: center;
+  min-height: calc(100vh - 190px);
+}
+
+.auth-login-card {
+  margin: 1.5rem auto;
+}
+
+.auth-login-body {
+  padding: 2rem 2rem 1.75rem;
+}
+
+.auth-login-subtitle {
+  min-height: 1.75rem;
+  color: rgba(238, 229, 255, 0.96);
+  font-weight: 600;
+}
+
+.auth-login-form {
+  margin-top: 0.25rem;
+}
+
+.auth-field {
+  margin-bottom: 1rem;
+}
+
+.auth-password-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.auth-password-header .form-label {
+  margin-bottom: 0;
+}
+
+.auth-secondary-link {
+  color: #c9a0ff;
+  text-decoration: none;
+}
+
+.auth-secondary-link:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+.auth-placeholder-text {
+  visibility: hidden;
+}
+
+.auth-login-submit {
+  margin-top: 0.35rem;
+  min-height: 52px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 1.08rem;
+  letter-spacing: 0.2px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 12px 28px rgba(185, 19, 114, 0.28), 0 0 16px rgba(168, 85, 247, 0.22);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.auth-login-submit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 34px rgba(185, 19, 114, 0.34), 0 0 22px rgba(168, 85, 247, 0.28);
+  filter: brightness(1.03);
+}
+
+.auth-login-submit:focus {
+  box-shadow: 0 0 0 3px rgba(192, 132, 252, 0.3), 0 12px 28px rgba(185, 19, 114, 0.28);
+}
+
+.auth-login-footer {
+  margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .auth-login-shell {
+    min-height: auto;
+  }
+
+  .auth-login-body {
+    padding: 1.5rem 1.25rem;
+  }
+}
+
+/* Link Styles - Simple UI Enhancement */
+.link-btn-primary {
+  color: var(--text-gradient-start, #4F9CF9);
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.link-btn-primary:hover {
+  color: var(--text-light, #fff);
+  text-decoration: underline;
+}
+
+.change-password-page {
+  min-height: calc(100vh - 180px);
+  margin: -1.5rem;
+  padding: 2rem 1.5rem;
+  background:
+    radial-gradient(circle at top left, rgba(88, 28, 135, 0.35), transparent 32%),
+    radial-gradient(circle at bottom right, rgba(37, 99, 235, 0.22), transparent 28%),
+    linear-gradient(135deg, #09090f 0%, #111827 46%, #0f172a 100%);
+}
+
+.change-password-card {
+  margin: 1.5rem auto;
+  background: linear-gradient(180deg, rgba(17, 24, 39, 0.96), rgba(15, 23, 42, 0.92));
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  box-shadow: 0 24px 60px rgba(2, 6, 23, 0.45), 0 0 24px rgba(96, 165, 250, 0.12) !important;
+}
+
+.change-password-card .card-body {
+  color: #e5eefb;
+}
+
+.change-password-subtitle {
+  color: rgba(226, 232, 240, 0.82);
+}
+
+.change-password-card .form-label {
+  color: #dbeafe;
+  font-weight: 500;
+}
+
+.change-password-card .form-control {
+  min-height: 46px;
+  background: rgba(15, 23, 42, 0.92) !important;
+  border: 1px solid rgba(96, 165, 250, 0.22) !important;
+}
+
+.change-password-card .form-control:focus {
+  border-color: rgba(59, 130, 246, 0.8) !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18) !important;
+}
+
+.change-password-submit {
+  min-width: 180px;
+  padding: 0.7rem 1.25rem;
+  border-radius: 12px;
+  font-weight: 600;
+  box-shadow: 0 10px 24px rgba(185, 19, 114, 0.28);
+}
+
+.change-password-back-link {
+  color: rgba(191, 219, 254, 0.82);
+  text-decoration: none;
+}
+
+.change-password-back-link:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+@media (max-width: 768px) {
+  .change-password-page {
+    margin: -1rem;
+    padding: 1.25rem 1rem;
+  }
+
+  .change-password-submit {
+    width: 100%;
+  }
+}

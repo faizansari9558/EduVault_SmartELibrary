@@ -1,0 +1,11 @@
+bin/
+obj/
+.vs/
+.idea/
+.git/
+.gitignore
+.env
+*.env
+Dockerfile*
+README*
+artifacts/

@@ -1,0 +1,581 @@
+@model SmartELibrary.ViewModels.ReadMaterialPageViewModel
+@{
+    ViewData["Title"] = "Read Chapter";
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+            <div>
+                <h5 class="mb-1">@Model.MaterialTitle</h5>
+                <div class="text-muted">Page @Model.PageNumber of @Model.TotalPages</div>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+                <button type="button" class="btn btn-glass" id="pauseReadingBtn">&#9208; Pause Reading</button>
+                <span class="text-muted">@Model.PageTitle</span>
+            </div>
+        </div>
+
+        <hr />
+
+        <div class="read-landscape">
+            @Html.Raw(Model.HtmlContent)
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <div>
+                @if (!Model.IsFirstPage)
+                {
+                    <a class="btn btn-outline-secondary" asp-action="ReadChapter" asp-route-materialId="@Model.MaterialId" asp-route-pageNumber="@(Model.PageNumber - 1)">Previous</a>
+                }
+            </div>
+            <div class="d-flex gap-2">
+                <a class="btn btn-outline-secondary" asp-action="Library" id="backToLibraryBtn">Back to Library</a>
+                @if (!Model.IsLastPage)
+                {
+                    <button type="button" class="btn btn-outline-primary" id="nextBtn">Next</button>
+                }
+                @if (Model.IsLastPage)
+                {
+                    <button type="button" class="btn btn-primary" id="completeBtn" @(Model.IsPageCompleted ? "disabled" : string.Empty)>
+                        Mark as Completed
+                    </button>
+                }
+                <button type="button" class="btn btn-outline-success @(Model.HasPendingQuiz ? string.Empty : "d-none")" id="takeQuizBtn">Take Quiz</button>
+            </div>
+        </div>
+
+        <div class="alert alert-info mt-3 mb-0 @(Model.HasMandatoryQuizAfterThisPage ? string.Empty : "d-none")" id="quizInfoAlert">
+            Quiz is available for this page. It appears after page completion and only if not attempted.
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="saveExitModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Save Reading Progress?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Do you want to save your progress and exit this chapter?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Continue Reading</button>
+                <button type="button" class="btn btn-primary" id="saveAndExitBtn">Save &amp; Exit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="quizModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Page Quiz</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="quizError" class="alert alert-danger d-none"></div>
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div id="quizProgress" class="text-muted small"></div>
+                    <div id="quizQuestionCount" class="text-muted small"></div>
+                </div>
+                <div id="quizQuestion" class="fw-semibold mb-3"></div>
+
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="quizOption" id="optA" value="A">
+                    <label class="form-check-label" for="optA" id="lblA"></label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="quizOption" id="optB" value="B">
+                    <label class="form-check-label" for="optB" id="lblB"></label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="quizOption" id="optC" value="C">
+                    <label class="form-check-label" for="optC" id="lblC"></label>
+                </div>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="quizOption" id="optD" value="D">
+                    <label class="form-check-label" for="optD" id="lblD"></label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" id="prevQuestionBtn">Previous</button>
+                <button type="button" class="btn btn-outline-secondary" id="nextQuestionBtn">Next</button>
+                <button type="button" class="btn btn-primary" id="submitQuizBtn">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const materialId = @Model.MaterialId;
+    const pageNumber = @Model.PageNumber;
+    const pageId = @Model.PageId;
+    const isLastPage = @Model.IsLastPage.ToString().ToLowerInvariant();
+    const nextPageUrl = `/Student/ReadChapter?materialId=${materialId}&pageNumber=${pageNumber + 1}`;
+    let activeQuizId = @((Model.QuizId ?? 0));
+    let quizQuestions = [];
+    let currentIndex = 0;
+    const answers = {};
+    let baseSeconds = Math.floor(@Model.TimeSpentSeconds);
+    let unsavedSeconds = 0;
+    let maxScrollDepthPercent = 0;
+    let lastInteractionAt = Date.now();
+    const idleThresholdMs = 15000;
+    const quizModalEl = document.getElementById('quizModal');
+    const quizModal = new bootstrap.Modal(quizModalEl, { backdrop: 'static', keyboard: false });
+    const saveExitModal = new bootstrap.Modal(document.getElementById('saveExitModal'));
+    let quizSubmitted = false;
+    let quizRestrictionActive = false;
+    let quizViolationHandled = false;
+    let isPageCompleted = @Model.IsPageCompleted.ToString().ToLowerInvariant();
+    let pendingNextUrl = null;
+
+    function formatTime(totalSeconds) {
+        const mins = Math.floor(totalSeconds / 60);
+        const secs = Math.floor(totalSeconds % 60);
+        return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    function updateTimerUI() {
+        const total = baseSeconds + unsavedSeconds;
+        const timer = document.getElementById('readTimer');
+        if (!timer) {
+            return;
+        }
+        timer.textContent = `Reading time: ${formatTime(total)}`;
+    }
+
+    function recordInteraction() {
+        lastInteractionAt = Date.now();
+    }
+
+    ['mousemove', 'keydown', 'touchstart', 'click'].forEach((evt) => {
+        document.addEventListener(evt, recordInteraction, { passive: true });
+    });
+
+    window.addEventListener('scroll', recordInteraction, { passive: true });
+    const interactionContainer = document.querySelector('.read-landscape');
+    if (interactionContainer) {
+        interactionContainer.addEventListener('scroll', recordInteraction, { passive: true });
+    }
+
+    setInterval(() => {
+        const isActiveWindow = document.visibilityState === 'visible' && document.hasFocus();
+        const isIdle = (Date.now() - lastInteractionAt) > idleThresholdMs;
+        if (!isPageCompleted && isActiveWindow && !isIdle) {
+            unsavedSeconds += 1;
+            updateTimerUI();
+        }
+    }, 1000);
+
+    async function saveReadingProgress(saveOnly) {
+        if (isPageCompleted && saveOnly) {
+            return { ok: true, totalSeconds: baseSeconds };
+        }
+
+        const body = `materialId=${materialId}&pageNumber=${pageNumber}&activeSeconds=${Math.max(0, unsavedSeconds)}&maxScrollDepthPercent=${encodeURIComponent(maxScrollDepthPercent)}&saveOnly=${saveOnly}`;
+        const res = await fetch('@Url.Action("PauseReading")', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body
+        });
+
+        if (!res.ok) {
+            return { ok: false };
+        }
+
+        const data = await res.json();
+        if (data.ok) {
+            baseSeconds = Math.floor(data.totalSeconds ?? (baseSeconds + unsavedSeconds));
+            unsavedSeconds = 0;
+            updateTimerUI();
+        }
+
+        return data;
+    }
+
+    setInterval(async () => {
+        if (unsavedSeconds <= 0) {
+            return;
+        }
+        await saveReadingProgress(true);
+    }, 20000);
+
+    function updateMaxScrollDepth() {
+        const container = document.querySelector('.read-landscape');
+
+        // Prefer the content container scroll metrics when it actually scrolls;
+        // otherwise fallback to window/document scroll.
+        let scrollTop = 0;
+        let clientHeight = 0;
+        let scrollHeight = 0;
+
+        if (container && container.scrollHeight > container.clientHeight) {
+            scrollTop = container.scrollTop;
+            clientHeight = container.clientHeight;
+            scrollHeight = container.scrollHeight;
+        } else {
+            const doc = document.documentElement;
+            scrollTop = window.scrollY || doc.scrollTop || 0;
+            clientHeight = window.innerHeight || doc.clientHeight || 0;
+            scrollHeight = doc.scrollHeight || 0;
+        }
+
+        if (scrollHeight <= clientHeight || scrollHeight === 0) {
+            maxScrollDepthPercent = Math.max(maxScrollDepthPercent, 100);
+            return;
+        }
+
+        const current = ((scrollTop + clientHeight) / scrollHeight) * 100;
+        if (Number.isFinite(current)) {
+            maxScrollDepthPercent = Math.max(maxScrollDepthPercent, Math.max(0, Math.min(current, 100)));
+        }
+    }
+
+    window.addEventListener('scroll', updateMaxScrollDepth, { passive: true });
+    const readContainer = document.querySelector('.read-landscape');
+    if (readContainer) {
+        readContainer.addEventListener('scroll', updateMaxScrollDepth, { passive: true });
+    }
+    updateMaxScrollDepth();
+
+    updateTimerUI();
+
+    window.addEventListener('beforeunload', function () {
+        if (unsavedSeconds <= 0 || isPageCompleted) {
+            return;
+        }
+
+        const data = new URLSearchParams();
+        data.append('materialId', String(materialId));
+        data.append('pageNumber', String(pageNumber));
+        data.append('activeSeconds', String(Math.max(0, unsavedSeconds)));
+        data.append('maxScrollDepthPercent', String(maxScrollDepthPercent));
+        data.append('saveOnly', 'true');
+        navigator.sendBeacon('@Url.Action("PauseReading")', data);
+    });
+
+    function setQuizError(msg) {
+        const el = document.getElementById('quizError');
+        el.textContent = msg;
+        el.classList.remove('d-none');
+    }
+
+    function clearQuizError() {
+        const el = document.getElementById('quizError');
+        el.textContent = '';
+        el.classList.add('d-none');
+    }
+
+    function renderQuestion() {
+        const question = quizQuestions[currentIndex];
+        if (!question) {
+            return;
+        }
+
+        document.getElementById('quizQuestion').textContent = question.questionText;
+        document.getElementById('lblA').textContent = question.optionA;
+        document.getElementById('lblB').textContent = question.optionB;
+        document.getElementById('lblC').textContent = question.optionC;
+        document.getElementById('lblD').textContent = question.optionD;
+        document.getElementById('quizProgress').textContent = `Question ${currentIndex + 1}`;
+        document.getElementById('quizQuestionCount').textContent = `of ${quizQuestions.length}`;
+
+        const selected = answers[question.questionId];
+        document.querySelectorAll('input[name="quizOption"]').forEach((input) => {
+            input.checked = selected === input.value;
+        });
+
+        document.getElementById('prevQuestionBtn').disabled = currentIndex === 0;
+        document.getElementById('nextQuestionBtn').disabled = currentIndex >= quizQuestions.length - 1;
+    }
+
+    function storeAnswer() {
+        const selected = document.querySelector('input[name="quizOption"]:checked');
+        const question = quizQuestions[currentIndex];
+        if (!question) {
+            return;
+        }
+
+        if (selected) {
+            answers[question.questionId] = selected.value;
+        }
+    }
+
+    async function loadQuiz() {
+        const res = await fetch(`@Url.Action("GetPageQuiz")?pageId=${pageId}`);
+        if (!res.ok) {
+            setQuizError('Quiz could not be loaded.');
+            return;
+        }
+        const data = await res.json();
+        activeQuizId = data.quizId;
+        quizQuestions = data.questions || [];
+        currentIndex = 0;
+        Object.keys(answers).forEach(key => delete answers[key]);
+        clearQuizError();
+        if (quizQuestions.length === 0) {
+            setQuizError('Quiz has no questions.');
+            return;
+        }
+        renderQuestion();
+    }
+
+    async function completeCurrentPage() {
+        updateMaxScrollDepth();
+        const res = await fetch('@Url.Action("CompletePage")', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `pageId=${pageId}&activeSeconds=${Math.max(0, unsavedSeconds)}&maxScrollDepthPercent=${encodeURIComponent(maxScrollDepthPercent)}`
+        });
+
+        if (!res.ok) {
+            alert('Could not complete page.');
+            return null;
+        }
+
+        const data = await res.json();
+        if (!data.ok) {
+            alert('Could not complete page.');
+            return null;
+        }
+
+        baseSeconds = data.recordedSeconds || baseSeconds;
+        unsavedSeconds = 0;
+        updateTimerUI();
+        isPageCompleted = true;
+        if (isLastPage) {
+            const completeBtn = document.getElementById('completeBtn');
+            if (completeBtn) {
+                completeBtn.disabled = true;
+            }
+        }
+
+        if (data.hasPendingQuiz) {
+            document.getElementById('takeQuizBtn').classList.remove('d-none');
+            quizSubmitted = false;
+            await loadQuiz();
+            quizModal.show();
+        }
+
+        return data;
+    }
+
+    const completeBtnEl = document.getElementById('completeBtn');
+    if (completeBtnEl) {
+        completeBtnEl.addEventListener('click', async function () {
+            pendingNextUrl = null;
+            await completeCurrentPage();
+        });
+    }
+
+    const nextBtnEl = document.getElementById('nextBtn');
+    if (nextBtnEl) {
+        nextBtnEl.addEventListener('click', async function () {
+            if (isPageCompleted) {
+                if (!document.getElementById('takeQuizBtn').classList.contains('d-none')) {
+                    pendingNextUrl = nextPageUrl;
+                    quizSubmitted = false;
+                    await loadQuiz();
+                    quizModal.show();
+                    return;
+                }
+
+                window.location.href = nextPageUrl;
+                return;
+            }
+
+            pendingNextUrl = nextPageUrl;
+            const data = await completeCurrentPage();
+            if (!data) {
+                pendingNextUrl = null;
+                return;
+            }
+
+            if (!data.hasPendingQuiz) {
+                window.location.href = nextPageUrl;
+            }
+        });
+    }
+
+    document.getElementById('takeQuizBtn').addEventListener('click', async function () {
+        if (!isPageCompleted) {
+            alert('Please mark this page as completed first.');
+            return;
+        }
+
+        pendingNextUrl = null;
+        quizSubmitted = false;
+        await loadQuiz();
+        quizModal.show();
+    });
+
+    document.getElementById('pauseReadingBtn').addEventListener('click', function () {
+        saveExitModal.show();
+    });
+
+    document.getElementById('backToLibraryBtn').addEventListener('click', function (e) {
+        e.preventDefault();
+        saveExitModal.show();
+    });
+
+    document.getElementById('saveAndExitBtn').addEventListener('click', async function () {
+        updateMaxScrollDepth();
+        const data = await saveReadingProgress(false);
+        if (!data.ok) {
+            alert('Could not save progress.');
+            return;
+        }
+        window.location.href = data.redirectUrl || '@Url.Action("Library")';
+    });
+
+    function activateQuizRestrictions() {
+        quizRestrictionActive = true;
+        quizViolationHandled = false;
+    }
+
+    function deactivateQuizRestrictions() {
+        quizRestrictionActive = false;
+    }
+
+    function blockContextMenuDuringQuiz(e) {
+        if (!quizRestrictionActive) {
+            return;
+        }
+        e.preventDefault();
+    }
+
+    function blockShortcutsDuringQuiz(e) {
+        if (!quizRestrictionActive) {
+            return;
+        }
+
+        const key = (e.key || '').toLowerCase();
+        const ctrl = e.ctrlKey || e.metaKey;
+        const blocked =
+            key === 'f12' ||
+            (ctrl && (key === 'u' || key === 's' || key === 'p' || key === 'c' || key === 'x' || key === 'v')) ||
+            (ctrl && e.shiftKey && (key === 'i' || key === 'j' || key === 'c'));
+
+        if (blocked) {
+            e.preventDefault();
+        }
+    }
+
+    async function autoSubmitQuizViolation(reason) {
+        if (!quizRestrictionActive || quizViolationHandled || quizSubmitted) {
+            return;
+        }
+
+        quizViolationHandled = true;
+        setQuizError('Quiz auto-submitted because you left the quiz tab/window.');
+        await submitQuiz(true, reason);
+    }
+
+    async function submitQuiz(forceSubmit = false, antiCheatReason = '') {
+        clearQuizError();
+        if (!forceSubmit && Object.keys(answers).length < quizQuestions.length) {
+            setQuizError('Please answer all questions before submitting.');
+            return;
+        }
+
+        const res = await fetch('@Url.Action("SubmitPageQuiz")', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pageId, quizId: activeQuizId, answers, antiCheatReason })
+        });
+
+        const data = await res.json();
+        if (!data.ok) {
+            setQuizError(data.message || 'Quiz submission failed.');
+            return;
+        }
+
+        quizSubmitted = true;
+        deactivateQuizRestrictions();
+        quizModal.hide();
+        document.getElementById('takeQuizBtn').classList.add('d-none');
+
+        if (pendingNextUrl) {
+            const url = pendingNextUrl;
+            pendingNextUrl = null;
+            window.location.href = url;
+        }
+    }
+
+    document.getElementById('prevQuestionBtn').addEventListener('click', function () {
+        storeAnswer();
+        if (currentIndex > 0) {
+            currentIndex -= 1;
+            renderQuestion();
+        }
+    });
+
+    document.getElementById('nextQuestionBtn').addEventListener('click', function () {
+        storeAnswer();
+        if (!answers[quizQuestions[currentIndex]?.questionId]) {
+            setQuizError('Please select an option to continue.');
+            return;
+        }
+        clearQuizError();
+        if (currentIndex < quizQuestions.length - 1) {
+            currentIndex += 1;
+            renderQuestion();
+        }
+    });
+
+    document.getElementById('submitQuizBtn').addEventListener('click', async function () {
+        storeAnswer();
+        await submitQuiz();
+    });
+
+    document.querySelectorAll('input[name="quizOption"]').forEach((input) => {
+        input.addEventListener('change', function () {
+            storeAnswer();
+            clearQuizError();
+        });
+    });
+
+    quizModalEl.addEventListener('shown.bs.modal', function () {
+        activateQuizRestrictions();
+    });
+
+    quizModalEl.addEventListener('hidden.bs.modal', function () {
+        deactivateQuizRestrictions();
+    });
+
+    document.addEventListener('contextmenu', blockContextMenuDuringQuiz);
+    document.addEventListener('keydown', blockShortcutsDuringQuiz);
+    document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'hidden') {
+            autoSubmitQuizViolation('visibility_hidden');
+        }
+    });
+    window.addEventListener('blur', function () {
+        if (!document.hasFocus()) {
+            autoSubmitQuizViolation('window_blur');
+        }
+    });
+</script>
+
+<style>
+    .btn-glass {
+        border: 1px solid rgba(13, 110, 253, 0.35);
+        background: rgba(13, 110, 253, 0.12);
+        color: #0d6efd;
+        border-radius: 999px;
+        backdrop-filter: blur(8px);
+        transition: all 0.2s ease;
+    }
+
+    .btn-glass:hover {
+        box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15), 0 6px 16px rgba(13, 110, 253, 0.2);
+        transform: translateY(-1px);
+    }
+</style>
+}

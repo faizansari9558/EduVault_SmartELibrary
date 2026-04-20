@@ -1,0 +1,52 @@
+@model List<SmartELibrary.ViewModels.SemesterResultRowViewModel>
+@{
+    ViewData["Title"] = "My Results";
+}
+
+<h2 class="mb-4">My Semester Results</h2>
+
+@if (TempData["Info"] is string info)
+{
+    <div class="alert alert-info">@info</div>
+}
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        No published results available yet. Please check back later or contact your admin.
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="card-header">Published Results</div>
+        <div class="card-body p-0">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Semester</th>
+                        <th class="text-center">Published On</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in Model)
+                    {
+                        <tr>
+                            <td><strong>@row.SemesterName</strong></td>
+                            <td class="text-center">
+                                @(row.PublishedAtUtc.HasValue
+                                    ? row.PublishedAtUtc.Value.ToLocalTime().ToString("dd MMM yyyy")
+                                    : "-")
+                            </td>
+                            <td class="text-center">
+                                <a asp-action="SemesterResult" asp-route-semesterId="@row.SemesterId"
+                                   class="btn btn-sm btn-primary">View Result</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

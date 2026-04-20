@@ -1,0 +1,101 @@
+@model SmartELibrary.ViewModels.StudentSemesterResultViewModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Result — @Model.SemesterName — @Model.StudentName</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 13px; color: #000; margin: 20px; }
+        h1 { font-size: 18px; margin-bottom: 4px; }
+        h2 { font-size: 15px; margin: 16px 0 6px; border-bottom: 1px solid #999; padding-bottom: 4px; }
+        .info-row { display: flex; gap: 40px; margin-bottom: 12px; }
+        .info-row span { font-size: 13px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
+        th, td { border: 1px solid #ccc; padding: 5px 8px; text-align: left; }
+        th { background: #f0f0f0; font-weight: bold; }
+        tfoot td { background: #f5f5f5; font-weight: bold; }
+        .final-box { border: 2px solid #333; display: inline-block; padding: 10px 24px; margin: 12px 0; text-align: center; }
+        .final-box .score { font-size: 32px; font-weight: bold; }
+        .final-box .status { font-size: 14px; }
+        .text-center { text-align: center; }
+        .print-btn { margin-bottom: 16px; }
+        @@media print {
+            .print-btn { display: none; }
+            body { margin: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="print-btn">
+        <button onclick="window.print()">Print / Save as PDF</button>
+        <button onclick="window.close()">Close</button>
+    </div>
+
+    <h1>Smart E-Library — Semester Result</h1>
+    <hr />
+
+    <div class="info-row">
+        <span><strong>Student:</strong> @Model.StudentName</span>
+        <span><strong>Enrollment No.:</strong> @Model.EnrollmentNumber</span>
+        <span><strong>Semester:</strong> @Model.SemesterName</span>
+    </div>
+
+    <div class="final-box">
+        <div class="score">@Model.FinalResult%</div>
+        <div class="status">@Model.Status</div>
+    </div>
+
+    @if (!Model.Subjects.Any())
+    {
+        <p>No chapter data available for this semester.</p>
+    }
+    else
+    {
+        foreach (var subject in Model.Subjects)
+        {
+            <h2>@subject.SubjectName</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Chapter</th>
+                        <th class="text-center">Completion %</th>
+                        <th class="text-center">Quiz Score %</th>
+                        <th class="text-center">Chapter Result %</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var m in subject.Materials)
+                    {
+                        <tr>
+                            <td>@m.Title</td>
+                            <td class="text-center">@m.CompletionPercent%</td>
+                            <td class="text-center">@m.QuizScorePercent%</td>
+                            <td class="text-center">@m.FinalProgress%</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3" style="text-align:right">Subject Average:</td>
+                        <td class="text-center">@subject.SubjectAverage%</td>
+                    </tr>
+                </tfoot>
+            </table>
+        }
+    }
+
+    <hr />
+    <p style="font-size:11px;color:#666;">
+        Generated on @DateTime.Now.ToString("dd MMM yyyy, hh:mm tt") &nbsp;|&nbsp; Smart E-Library
+    </p>
+
+    <script>
+        // Auto-trigger print dialog when page loads
+        window.onload = function () { window.print(); };
+    </script>
+</body>
+</html>
